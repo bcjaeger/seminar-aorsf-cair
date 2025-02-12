@@ -1,7 +1,8 @@
 ---
-title: "My Quarto Presentation"
-author: "Your Name"
-date: "`r Sys.Date()`"
+title: "Oblique Random Forests"
+subtitle: "Making Leo Breiman’s Masterpiece Accessible and Interpretable "
+author: "Byron C Jaeger"
+date: "February 19, 2025"
 format: 
   revealjs:
     theme: simple
@@ -10,21 +11,6 @@ execute:
   freeze: auto
 ---
 
-## Quarto
+## Hello, my name is Byron
 
-Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
-
-## Bullets
-
-When you click the **Render** button a document will be generated that includes:
-
--   Content authored with markdown
--   Output from executable code
-
-## Code
-
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
-
-```{r}
-1 + 1
-```
+![](img/run_R_kids.png){fig-align="center"}
