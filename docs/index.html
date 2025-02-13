@@ -30,6 +30,71 @@
       margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
       vertical-align: middle;
     }
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; font-weight: bold; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   </style>
   <link rel="stylesheet" href="site_libs/revealjs/dist/theme/quarto.css">
   <link href="site_libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
@@ -343,13 +408,159 @@ Byron C Jaeger
 <section id="hello-my-name-is-byron" class="slide level2">
 <h2>Hello, my name is Byron</h2>
 
+<img data-src="img/run_R_kids.png" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section id="bottom-line-up-front" class="slide level2">
+<h2>Bottom line up front</h2>
+<ol type="1">
+<li><p>Oblique random forests are generally good prediction models, and they are very good for <em>spectral</em> data.</p></li>
+<li><p><code>aorsf</code> provides a unified, simple, and fast interface for oblique random forests.</p></li>
+</ol>
+</section>
+<section id="spectral-data" class="slide level2">
+<h2>Spectral data</h2>
+<div class="cell" data-layout-align="center">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 215 × 103
+   x_001 x_002 x_003 x_004 x_005 x_006 x_007 x_008 x_009 x_010 x_011 x_012 x_013
+   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1  2.62  2.62  2.62  2.62  2.62  2.62  2.62  2.62  2.63  2.63  2.63  2.63  2.64
+ 2  2.83  2.84  2.84  2.85  2.85  2.86  2.86  2.87  2.87  2.88  2.88  2.89  2.90
+ 3  2.58  2.58  2.59  2.59  2.59  2.59  2.59  2.60  2.60  2.60  2.60  2.61  2.61
+ 4  2.82  2.82  2.83  2.83  2.83  2.83  2.83  2.84  2.84  2.84  2.84  2.85  2.85
+ 5  2.79  2.79  2.79  2.79  2.80  2.80  2.80  2.80  2.81  2.81  2.81  2.82  2.82
+ 6  3.01  3.02  3.02  3.03  3.03  3.04  3.04  3.05  3.06  3.06  3.07  3.08  3.09
+ 7  2.99  2.99  3.00  3.01  3.01  3.02  3.02  3.03  3.04  3.04  3.05  3.06  3.07
+ 8  2.53  2.53  2.53  2.53  2.53  2.53  2.53  2.53  2.54  2.54  2.54  2.54  2.54
+ 9  3.27  3.28  3.29  3.29  3.30  3.31  3.31  3.32  3.33  3.33  3.34  3.35  3.36
+10  3.40  3.41  3.41  3.42  3.43  3.43  3.44  3.45  3.46  3.47  3.48  3.48  3.49
+# ℹ 205 more rows
+# ℹ 90 more variables: x_014 &lt;dbl&gt;, x_015 &lt;dbl&gt;, x_016 &lt;dbl&gt;, x_017 &lt;dbl&gt;,
+#   x_018 &lt;dbl&gt;, x_019 &lt;dbl&gt;, x_020 &lt;dbl&gt;, x_021 &lt;dbl&gt;, x_022 &lt;dbl&gt;,
+#   x_023 &lt;dbl&gt;, x_024 &lt;dbl&gt;, x_025 &lt;dbl&gt;, x_026 &lt;dbl&gt;, x_027 &lt;dbl&gt;,
+#   x_028 &lt;dbl&gt;, x_029 &lt;dbl&gt;, x_030 &lt;dbl&gt;, x_031 &lt;dbl&gt;, x_032 &lt;dbl&gt;,
+#   x_033 &lt;dbl&gt;, x_034 &lt;dbl&gt;, x_035 &lt;dbl&gt;, x_036 &lt;dbl&gt;, x_037 &lt;dbl&gt;,
+#   x_038 &lt;dbl&gt;, x_039 &lt;dbl&gt;, x_040 &lt;dbl&gt;, x_041 &lt;dbl&gt;, x_042 &lt;dbl&gt;, …</code></pre>
+</div>
+</div>
+</section>
+<section id="section" class="slide level2">
+<h2></h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a></a><span class="fu">library</span>(tidymodels)</span>
+<span id="cb2-2"><a></a><span class="fu">library</span>(bonsai)</span>
+<span id="cb2-3"><a></a><span class="fu">library</span>(modeldata)</span>
+<span id="cb2-4"><a></a></span>
+<span id="cb2-5"><a></a><span class="co"># Load the dataset</span></span>
+<span id="cb2-6"><a></a><span class="fu">data</span>(meats)</span>
+<span id="cb2-7"><a></a></span>
+<span id="cb2-8"><a></a><span class="co"># Define models</span></span>
+<span id="cb2-9"><a></a>axis <span class="ot">&lt;-</span> <span class="fu">rand_forest</span>(<span class="at">mode =</span> <span class="st">"regression"</span>, <span class="at">engine =</span> <span class="st">"ranger"</span>)</span>
+<span id="cb2-10"><a></a>oblique <span class="ot">&lt;-</span> <span class="fu">rand_forest</span>(<span class="at">mode =</span> <span class="st">"regression"</span>, <span class="at">engine =</span> <span class="st">"aorsf"</span>)</span>
+<span id="cb2-11"><a></a></span>
+<span id="cb2-12"><a></a><span class="co"># Define cross-validation folds</span></span>
+<span id="cb2-13"><a></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb2-14"><a></a>splits <span class="ot">&lt;-</span> <span class="fu">vfold_cv</span>(meats, <span class="at">v =</span> <span class="dv">5</span>)  <span class="co"># 5-fold CV</span></span>
+<span id="cb2-15"><a></a></span>
+<span id="cb2-16"><a></a><span class="co"># Define a recipe (optional, but recommended)</span></span>
+<span id="cb2-17"><a></a>meats_recipe <span class="ot">&lt;-</span> <span class="fu">recipe</span>(protein <span class="sc">~</span> ., <span class="at">data =</span> meats) <span class="sc">%&gt;%</span></span>
+<span id="cb2-18"><a></a>  <span class="fu">step_normalize</span>(<span class="fu">all_numeric_predictors</span>()) </span>
+<span id="cb2-19"><a></a></span>
+<span id="cb2-20"><a></a><span class="co"># Create workflows</span></span>
+<span id="cb2-21"><a></a>axis_wf <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb2-22"><a></a>  <span class="fu">add_model</span>(axis) <span class="sc">%&gt;%</span></span>
+<span id="cb2-23"><a></a>  <span class="fu">add_recipe</span>(meats_recipe)</span>
+<span id="cb2-24"><a></a></span>
+<span id="cb2-25"><a></a>oblique_wf <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb2-26"><a></a>  <span class="fu">add_model</span>(oblique) <span class="sc">%&gt;%</span></span>
+<span id="cb2-27"><a></a>  <span class="fu">add_recipe</span>(meats_recipe)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section class="slide level2">
 
-<img data-src="img/run_R_kids.png" class="quarto-figure quarto-figure-center r-stretch"><div class="quarto-auto-generated-content">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a><span class="co"># Resample both models using fit_resamples()</span></span>
+<span id="cb3-2"><a></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb3-3"><a></a></span>
+<span id="cb3-4"><a></a>res_axis <span class="ot">&lt;-</span> axis_wf <span class="sc">%&gt;%</span> </span>
+<span id="cb3-5"><a></a> <span class="fu">fit_resamples</span>(<span class="at">resamples =</span> splits, </span>
+<span id="cb3-6"><a></a>               <span class="at">metrics =</span> <span class="fu">metric_set</span>(rmse, rsq))</span>
+<span id="cb3-7"><a></a></span>
+<span id="cb3-8"><a></a>res_oblique <span class="ot">&lt;-</span> oblique_wf <span class="sc">%&gt;%</span> </span>
+<span id="cb3-9"><a></a> <span class="fu">fit_resamples</span>(<span class="at">resamples =</span> splits, </span>
+<span id="cb3-10"><a></a>               <span class="at">metrics =</span> <span class="fu">metric_set</span>(rmse, rsq))</span>
+<span id="cb3-11"><a></a></span>
+<span id="cb3-12"><a></a><span class="co"># Combine results into a tibble</span></span>
+<span id="cb3-13"><a></a>results <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb3-14"><a></a>  <span class="fu">collect_metrics</span>(res_axis) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">model =</span> <span class="st">"Axis-Based RF"</span>),</span>
+<span id="cb3-15"><a></a>  <span class="fu">collect_metrics</span>(res_oblique) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">model =</span> <span class="st">"Oblique RF"</span>)</span>
+<span id="cb3-16"><a></a>)</span>
+<span id="cb3-17"><a></a></span>
+<span id="cb3-18"><a></a><span class="co"># Print results</span></span>
+<span id="cb3-19"><a></a><span class="fu">print</span>(results)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 7
+  .metric .estimator  mean     n std_err .config              model        
+  &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;                &lt;chr&gt;        
+1 rmse    standard   1.52      5 0.130   Preprocessor1_Model1 Axis-Based RF
+2 rsq     standard   0.760     5 0.0458  Preprocessor1_Model1 Axis-Based RF
+3 rmse    standard   0.727     5 0.0512  Preprocessor1_Model1 Oblique RF   
+4 rsq     standard   0.948     5 0.00779 Preprocessor1_Model1 Oblique RF   </code></pre>
+</div>
+</div>
+</section>
+<section id="overview" class="slide level2">
+<h2>Overview</h2>
+<ul>
+<li><p>Decision trees</p>
+<ul>
+<li><p>Growing trees</p></li>
+<li><p>Leaf nodes</p></li>
+</ul></li>
+<li><p>Random Forests</p>
+<ul>
+<li><p>Out-of-bag predictions</p></li>
+<li><p>Variable importance</p></li>
+</ul></li>
+</ul>
+</section>
+<section class="slide level2">
+
+
+<img data-src="img/penguins.png" style="width:100.0%" class="r-stretch"><div class="footer">
+<p>Data were collected and made available by <a href="https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php">Dr.&nbsp;Kristen Gorman</a> and the Palmer Station, a member of the <a href="https://lternet.edu/">Long Term Ecological Research Network</a>.</p>
+</div>
+</section>
+<section>
+<section id="decision-trees" class="title-slide slide level1 center">
+<h1>Decision trees</h1>
+
+</section>
+<section class="slide level2">
+
+<p>Decision trees grow by recursively splitting data.</p>
+
+<img data-src="index_files/figure-revealjs/penguin-fig-demo-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:100.0%"></section>
+<section class="slide level2">
+
+<p>Splits should create groups with different outcomes.</p>
+
+<img data-src="index_files/figure-revealjs/unnamed-chunk-4-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:100.0%"></section>
+<section class="slide level2">
+
+<p>Splitting continues until stopping criterion are met.</p>
+
+<img data-src="index_files/figure-revealjs/unnamed-chunk-5-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:100.0%"></section>
+<section class="slide level2">
+
+<p>The same splits, visualized as a tree</p>
+
+
+<img data-src="img/rpart_plot_classif.png" class="quarto-figure quarto-figure-center r-stretch"><div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 
 </div>
 </div>
-</section>
+</section></section>
     </div>
   </div>
 
@@ -560,6 +771,82 @@ Byron C Jaeger
         ]
       });
     </script>
+    
+
+    <script>
+
+      // htmlwidgets need to know to resize themselves when slides are shown/hidden.
+
+      // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
+
+      // slide changes (different for each slide format).
+
+      (function () {
+
+        // dispatch for htmlwidgets
+
+        function fireSlideEnter() {
+
+          const event = window.document.createEvent("Event");
+
+          event.initEvent("slideenter", true, true);
+
+          window.document.dispatchEvent(event);
+
+        }
+
+    
+
+        function fireSlideChanged(previousSlide, currentSlide) {
+
+          fireSlideEnter();
+
+    
+
+          // dispatch for shiny
+
+          if (window.jQuery) {
+
+            if (previousSlide) {
+
+              window.jQuery(previousSlide).trigger("hidden");
+
+            }
+
+            if (currentSlide) {
+
+              window.jQuery(currentSlide).trigger("shown");
+
+            }
+
+          }
+
+        }
+
+    
+
+        // hookup for slidy
+
+        if (window.w3c_slidy) {
+
+          window.w3c_slidy.add_observer(function (slide_num) {
+
+            // slide_num starts at position 1
+
+            fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
+
+          });
+
+        }
+
+    
+
+      })();
+
+    </script>
+
+    
+
     <script id="quarto-html-after-body" type="application/javascript">
     window.document.addEventListener("DOMContentLoaded", function (event) {
       const toggleBodyColorMode = (bsSheetEl) => {

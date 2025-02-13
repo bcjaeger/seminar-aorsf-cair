@@ -1,0 +1,9 @@
+name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
+.Random.seed|object|d3fd2ef4b1c3ba9e|||||||||||||||
+fig_penguins|stem|b136ddf7aa79ada6|cd619b5c3939e650|aaa3885747b5206a|-599837288||t20132.8930359492s|9207ce33b2c42254|2579369|rds|local|vector|||2.422||
+fig_surv_bm|stem|0c01fde82d4b6790|6075f88f38ab7ae4|e86f91305d755c69|1853368272||t20132.8825828767s|decfda6ddcd561c0|934462|rds|local|vector|||1.031|Use of .data in tidyselect expressions was deprecated in tidyselect 1.2.0.ℹ Please use all_ofvar or any_ofvar instead of .datavar|
+perc_diff|function|79c7823ca91ca93a|||||||||||||||
+plot_decision_surface|function|1aadcccbc2564a45|||||||||||||||
+slides|stem||2d09dac97701988d|7a08d4ee3442fe9c|1331386099|index.html*index.qmd|t20132.8850594355s||0|file|local|vector|||||_paths_ missing files index.html
+viz_penguins|function|13211c8b74d165e1|||||||||||||||
+viz_surv_bm|function|b64e80a1f085df17|||||||||||||||

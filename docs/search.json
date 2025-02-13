@@ -5,5 +5,33 @@
     "title": "Oblique Random Forests",
     "section": "Hello, my name is Byron",
     "text": "Hello, my name is Byron"
+  },
+  {
+    "objectID": "index.html#bottom-line-up-front",
+    "href": "index.html#bottom-line-up-front",
+    "title": "Oblique Random Forests",
+    "section": "Bottom line up front",
+    "text": "Bottom line up front\n\nOblique random forests are generally good prediction models, and they are very good for spectral data.\naorsf provides a unified, simple, and fast interface for oblique random forests."
+  },
+  {
+    "objectID": "index.html#spectral-data",
+    "href": "index.html#spectral-data",
+    "title": "Oblique Random Forests",
+    "section": "Spectral data",
+    "text": "Spectral data\n\n\n# A tibble: 215 × 103\n   x_001 x_002 x_003 x_004 x_005 x_006 x_007 x_008 x_009 x_010 x_011 x_012 x_013\n   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;\n 1  2.62  2.62  2.62  2.62  2.62  2.62  2.62  2.62  2.63  2.63  2.63  2.63  2.64\n 2  2.83  2.84  2.84  2.85  2.85  2.86  2.86  2.87  2.87  2.88  2.88  2.89  2.90\n 3  2.58  2.58  2.59  2.59  2.59  2.59  2.59  2.60  2.60  2.60  2.60  2.61  2.61\n 4  2.82  2.82  2.83  2.83  2.83  2.83  2.83  2.84  2.84  2.84  2.84  2.85  2.85\n 5  2.79  2.79  2.79  2.79  2.80  2.80  2.80  2.80  2.81  2.81  2.81  2.82  2.82\n 6  3.01  3.02  3.02  3.03  3.03  3.04  3.04  3.05  3.06  3.06  3.07  3.08  3.09\n 7  2.99  2.99  3.00  3.01  3.01  3.02  3.02  3.03  3.04  3.04  3.05  3.06  3.07\n 8  2.53  2.53  2.53  2.53  2.53  2.53  2.53  2.53  2.54  2.54  2.54  2.54  2.54\n 9  3.27  3.28  3.29  3.29  3.30  3.31  3.31  3.32  3.33  3.33  3.34  3.35  3.36\n10  3.40  3.41  3.41  3.42  3.43  3.43  3.44  3.45  3.46  3.47  3.48  3.48  3.49\n# ℹ 205 more rows\n# ℹ 90 more variables: x_014 &lt;dbl&gt;, x_015 &lt;dbl&gt;, x_016 &lt;dbl&gt;, x_017 &lt;dbl&gt;,\n#   x_018 &lt;dbl&gt;, x_019 &lt;dbl&gt;, x_020 &lt;dbl&gt;, x_021 &lt;dbl&gt;, x_022 &lt;dbl&gt;,\n#   x_023 &lt;dbl&gt;, x_024 &lt;dbl&gt;, x_025 &lt;dbl&gt;, x_026 &lt;dbl&gt;, x_027 &lt;dbl&gt;,\n#   x_028 &lt;dbl&gt;, x_029 &lt;dbl&gt;, x_030 &lt;dbl&gt;, x_031 &lt;dbl&gt;, x_032 &lt;dbl&gt;,\n#   x_033 &lt;dbl&gt;, x_034 &lt;dbl&gt;, x_035 &lt;dbl&gt;, x_036 &lt;dbl&gt;, x_037 &lt;dbl&gt;,\n#   x_038 &lt;dbl&gt;, x_039 &lt;dbl&gt;, x_040 &lt;dbl&gt;, x_041 &lt;dbl&gt;, x_042 &lt;dbl&gt;, …"
+  },
+  {
+    "objectID": "index.html#section",
+    "href": "index.html#section",
+    "title": "Oblique Random Forests",
+    "section": "",
+    "text": "library(tidymodels)\nlibrary(bonsai)\nlibrary(modeldata)\n\n# Load the dataset\ndata(meats)\n\n# Define models\naxis &lt;- rand_forest(mode = \"regression\", engine = \"ranger\")\noblique &lt;- rand_forest(mode = \"regression\", engine = \"aorsf\")\n\n# Define cross-validation folds\nset.seed(123)\nsplits &lt;- vfold_cv(meats, v = 5)  # 5-fold CV\n\n# Define a recipe (optional, but recommended)\nmeats_recipe &lt;- recipe(protein ~ ., data = meats) %&gt;%\n  step_normalize(all_numeric_predictors()) \n\n# Create workflows\naxis_wf &lt;- workflow() %&gt;%\n  add_model(axis) %&gt;%\n  add_recipe(meats_recipe)\n\noblique_wf &lt;- workflow() %&gt;%\n  add_model(oblique) %&gt;%\n  add_recipe(meats_recipe)"
+  },
+  {
+    "objectID": "index.html#overview",
+    "href": "index.html#overview",
+    "title": "Oblique Random Forests",
+    "section": "Overview",
+    "text": "Overview\n\nDecision trees\n\nGrowing trees\nLeaf nodes\n\nRandom Forests\n\nOut-of-bag predictions\nVariable importance"
   }
 ]

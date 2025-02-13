@@ -11,6 +11,163 @@ execute:
   freeze: auto
 ---
 
+```{r setup, echo=FALSE, results='hide'}
+
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      message = FALSE,
+                      warning = FALSE,
+                      dpi = 300,
+                      cache = FALSE,
+                      fig.height = 7,
+                      out.width = '100%',
+                      fig.align = 'center')
+
+library(ggplot2)
+
+withr::with_dir(
+ here::here(),
+ targets::tar_load(c(fig_surv_bm, fig_penguins))
+)
+
+```
+
+
 ## Hello, my name is Byron
 
 ![](img/run_R_kids.png){fig-align="center"}
+
+## Bottom line up front
+
+1. Oblique random forests are generally good prediction models, and they are very good for *spectral* data.
+
+1. `aorsf` provides a unified, simple, and fast interface for oblique random forests.
+
+## Spectral data
+
+```{r}
+
+library(modeldata)
+
+meats
+
+```
+
+
+##
+
+```{r echo=TRUE}
+
+library(tidymodels)
+library(bonsai)
+library(modeldata)
+
+# Load the dataset
+data(meats)
+
+# Define models
+axis <- rand_forest(mode = "regression", engine = "ranger")
+oblique <- rand_forest(mode = "regression", engine = "aorsf")
+
+# Define cross-validation folds
+set.seed(123)
+splits <- vfold_cv(meats, v = 5)  # 5-fold CV
+
+# Define a recipe (optional, but recommended)
+meats_recipe <- recipe(protein ~ ., data = meats) %>%
+  step_normalize(all_numeric_predictors()) 
+
+# Create workflows
+axis_wf <- workflow() %>%
+  add_model(axis) %>%
+  add_recipe(meats_recipe)
+
+oblique_wf <- workflow() %>%
+  add_model(oblique) %>%
+  add_recipe(meats_recipe)
+
+```
+
+---
+
+```{r echo=TRUE}
+
+# Resample both models using fit_resamples()
+set.seed(123)
+
+res_axis <- axis_wf %>% 
+ fit_resamples(resamples = splits, 
+               metrics = metric_set(rmse, rsq))
+
+res_oblique <- oblique_wf %>% 
+ fit_resamples(resamples = splits, 
+               metrics = metric_set(rmse, rsq))
+
+# Combine results into a tibble
+results <- bind_rows(
+  collect_metrics(res_axis) %>% mutate(model = "Axis-Based RF"),
+  collect_metrics(res_oblique) %>% mutate(model = "Oblique RF")
+)
+
+# Print results
+print(results)
+
+```
+
+
+
+## Overview
+
+- Decision trees
+
+    + Growing trees
+    
+    + Leaf nodes
+
+- Random Forests
+
+    + Out-of-bag predictions
+    
+    + Variable importance
+
+---
+
+![](img/penguins.png){width=100%}
+
+:::footer
+Data were collected and made available by [Dr. Kristen Gorman](https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php) and the Palmer Station, a member of the [Long Term Ecological Research Network](https://lternet.edu/).
+:::
+
+# Decision trees
+
+---
+
+Decision trees grow by recursively splitting data.
+
+
+```{r penguin-fig-demo}
+fig_penguins$demo
+```
+
+---
+
+Splits should create groups with different outcomes.
+
+```{r}
+fig_penguins$axis_1
+```
+
+---
+
+Splitting continues until stopping criterion are met.
+
+```{r}
+fig_penguins$axis_2
+```
+
+---
+
+The same splits, visualized as a tree
+
+![](img/rpart_plot_classif.png){fig-align="center"}
+
