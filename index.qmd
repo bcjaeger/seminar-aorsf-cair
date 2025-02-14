@@ -1,11 +1,12 @@
 ---
 title: "Oblique Random Forests"
-subtitle: "Making Leo Breiman’s Masterpiece Accessible and Interpretable "
+subtitle: "Making Leo Breiman’s Masterpiece Accessible and Interpretable with `aorsf`"
 author: "Byron C Jaeger"
 date: "February 19, 2025"
 format: 
   revealjs:
     theme: simple
+    css: custom.css
     slide-number: true
 execute: 
   freeze: auto
@@ -18,12 +19,25 @@ knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE,
                       warning = FALSE,
                       dpi = 300,
-                      cache = FALSE,
+                      cache = TRUE,
                       fig.height = 7,
                       out.width = '100%',
                       fig.align = 'center')
 
-library(ggplot2)
+library(tidyverse)
+library(splines)
+library(magick)
+library(ggforce)
+library(gt)
+library(table.glue)
+
+thm  <- theme_bw() + 
+  theme(
+    text = element_text(size=18, face = 'bold'),
+    panel.grid = element_blank()
+  )
+
+theme_set(thm)
 
 withr::with_dir(
  here::here(),
@@ -39,96 +53,569 @@ withr::with_dir(
 
 ## Bottom line up front
 
-1. Oblique random forests are generally good prediction models, and they are very good for *spectral* data.
+1. Oblique random forests are good at prediction, and are likely the *best* tool for spectral data (defined later).
 
 1. `aorsf` provides a unified, simple, and fast interface for oblique random forests.
 
-## Spectral data
+## Overview
 
-```{r}
+- Background
 
-library(modeldata)
+    + Supervised learning
+    
+    + Decision trees and random forests
 
-meats
+- `aorsf`
 
+    + Why? (statement of need)
+    
+    + How? (use cases)
+
+# Supervised learning
+
+---
+
+```{r out.width='90%', echo=FALSE, fig.align='center'}
+knitr::include_graphics('img/ml-supervised-1.svg')
+```
+
+---
+
+```{r out.width='90%', echo=FALSE, fig.align='center'}
+knitr::include_graphics('img/ml-supervised-1-1.svg')
+```
+
+---
+
+```{r out.width='90%', echo=FALSE, fig.align='center'}
+knitr::include_graphics('img/ml-supervised-1-2.svg')
+```
+
+---
+
+```{r out.width='90%', echo=FALSE, fig.align='center'}
+knitr::include_graphics('img/ml-supervised-1-3.svg')
+```
+
+---
+
+```{r out.width='90%', echo=FALSE, fig.align='center'}
+knitr::include_graphics('img/ml-supervised-2.svg')
+```
+
+---
+
+```{r out.width='90%', echo=FALSE, fig.align='center'}
+knitr::include_graphics('img/ml-supervised-3.svg')
+```
+
+---
+
+```{r out.width='90%', echo=FALSE, fig.align='center'}
+knitr::include_graphics('img/ml-supervised-4.svg')
+```
+
+---
+
+```{r out.width='90%', echo=FALSE, fig.align='center'}
+knitr::include_graphics('img/ml-supervised-5.svg')
+```
+
+---
+
+```{r out.width='90%', echo=FALSE, fig.align='center'}
+knitr::include_graphics('img/ml-supervised-6.svg')
+```
+
+---
+
+```{r out.width='90%', echo=FALSE, fig.align='center'}
+knitr::include_graphics('img/ml-supervised-7.svg')
+```
+
+---
+
+```{r out.width='90%', echo=FALSE, fig.align='center'}
+knitr::include_graphics('img/ml-supervised-7-1.svg')
+```
+
+---
+
+```{r out.width='90%', echo=FALSE, fig.align='center'}
+knitr::include_graphics('img/ml-supervised-7-2.svg')
 ```
 
 
-##
+## Learners
 
-```{r echo=TRUE}
 
-library(tidymodels)
-library(bonsai)
-library(modeldata)
+A *learner* is a recipe for a prediction model
 
-# Load the dataset
-data(meats)
+:::{.incremental}
 
-# Define models
-axis <- rand_forest(mode = "regression", engine = "ranger")
-oblique <- rand_forest(mode = "regression", engine = "aorsf")
+- A learner is not the same thing as a prediction model 
 
-# Define cross-validation folds
-set.seed(123)
-splits <- vfold_cv(meats, v = 5)  # 5-fold CV
+- A recipe is not the same thing as food.
 
-# Define a recipe (optional, but recommended)
-meats_recipe <- recipe(protein ~ ., data = meats) %>%
-  step_normalize(all_numeric_predictors()) 
+- This distinction is important for cross-validation (defined soon)
 
-# Create workflows
-axis_wf <- workflow() %>%
-  add_model(axis) %>%
-  add_recipe(meats_recipe)
+:::
 
-oblique_wf <- workflow() %>%
-  add_model(oblique) %>%
-  add_recipe(meats_recipe)
+---
+
+## Find a good learner for these data
+
+```{r}
+
+set.seed(329)
+
+n <- 75
+x <- runif(n, min = 100, max = 160)
+
+y_true <- scales::rescale(exp(-x/20), to = c(1, 12)) 
+y_obs <- pmax(pmin(y_true + rnorm(n, mean=1), 15), 1)
+
+ggdata <- tibble(x = x, y = y_obs)
+
+p <- ggplot(ggdata) + 
+ aes(x = x, y = y) + 
+ labs(y = "Time until next blood pressure measure, months",
+      x = "Systolic blood pressure today, mm Hg") + 
+ scale_y_continuous(limits = c(-2, 15),
+                    breaks = c(0, 2, 4, 6, 8, 10, 12, 14)) + 
+ scale_x_continuous(limits = c(100, 160),
+                    breaks = c(100, 120, 140, 160))
+points <- geom_point(shape = 21, 
+                     color = 'black', 
+                     fill = 'orange', 
+                     size = 4.5)
+points_light <- geom_point(shape = 21, 
+                           color = 'black', 
+                           fill = 'orange', 
+                           size = 4.5, 
+                           alpha = 0.25)
+
+m1 <- lm(y ~ x, data = ggdata)
+
+x_new <- data.frame(x = seq(min(x), max(x), len = 1000))
+
+yhat_m1 <- m1 %>% 
+ predict(newdata = x_new)
+
+m2 <- lm(y ~ bs(x, degree = 3), data = ggdata)
+
+yhat_m2 <- m2 %>% 
+ predict(newdata = x_new)
+
+m3 <- lm(y ~ bs(x, degree = 15), data = ggdata)
+
+yhat_m3 <- m3 %>% 
+ predict(newdata = x_new)
+
+p + points
 
 ```
 
 ---
 
-```{r echo=TRUE}
+## Learner 1: find the line of best fit
 
-# Resample both models using fit_resamples()
-set.seed(123)
 
-res_axis <- axis_wf %>% 
- fit_resamples(resamples = splits, 
-               metrics = metric_set(rmse, rsq))
+```{r}
+p + points + 
+ geom_line(data = tibble(y = yhat_m1, x = x_new$x),
+           color = 'purple', 
+           size = 1.5)
+```
 
-res_oblique <- oblique_wf %>% 
- fit_resamples(resamples = splits, 
-               metrics = metric_set(rmse, rsq))
+---
 
-# Combine results into a tibble
-results <- bind_rows(
-  collect_metrics(res_axis) %>% mutate(model = "Axis-Based RF"),
-  collect_metrics(res_oblique) %>% mutate(model = "Oblique RF")
+## Learner 1: find the line of best fit
+
+```{r}
+
+raster <- image_read('img/person-standing.png') %>% 
+ image_fill('none') %>% 
+ as.raster()
+
+circle_data <- tibble(
+ x = 120,
+ y = predict(m1, newdata = tibble(x=x)),
+ label = paste("Our model's prediction\nfor Bill:", 
+               round(y, 1), 'months')
 )
 
-# Print results
-print(results)
+p + points_light + 
+ geom_line(data = tibble(y = yhat_m1, x = x_new$x),
+              color = 'purple', 
+              size = 1.5) + 
+ geom_mark_circle(data = circle_data, 
+                  aes(label = label), 
+                  fill = 'orange', 
+                  label.fontsize = 15,
+                  expand = 0.02, 
+                  label.fill = 'grey90') + 
+ geom_segment(x = 120, 
+              y = 2, 
+              xend = 120, 
+              yend = 6.3) + 
+ annotate(geom = 'text',
+          size = 6,
+          x = 113,
+          y = 1.5, 
+          label = "Bill's SBP:\n120 mm Hg") +
+ annotation_raster(raster, 
+                   ymin = -2.2, 
+                   ymax = 2, 
+                   xmin = 115, 
+                   xmax = 125)
+```
+
+---
+
+## Learner 2: Use a spline
+
+```{r}
+
+p + points + 
+ geom_line(data = tibble(y = yhat_m2, x = x_new$x),
+           color = 'purple', 
+           size = 1.5)
+
+```
+
+---
+
+## Learner 3: Loosen the spline
+
+```{r}
+
+p + points + 
+ geom_line(data = tibble(y = yhat_m3, x = x_new$x),
+           color = 'purple', 
+           size = 1.5)
+
+```
+
+---
+
+## Cross validation
+
+This technique allows you to objectively compare *learners*
+
+:::{.incremental}
+
+- Hold some data out as a testing set
+
+- Apply each learner to the remaining data (training set)
+
+- Predict the outcome using each model (one per learner)
+
+- Evaluate prediction accuracy
+
+- Repeat with different held out data
+
+- Evaluate average prediction accuracy for each learner
+
+:::
+
+---
+
+## All our data
+
+```{r}
+
+test_index <- c(
+ 13, 
+ 10, 
+ 25,
+ 42
+)
+
+
+train <- ggdata[-test_index, ]
+test <- ggdata[test_index, ]
+
+m1 <- lm(y ~ x, data = train)
+
+x_new <- data.frame(x = seq(min(ggdata$x), max(ggdata$x), len = 1000))
+
+yhat_m1 <- m1 %>% 
+ predict(newdata = x_new)
+
+m2 <- lm(y ~ bs(x, degree = 3), data = train)
+
+yhat_m2 <- m2 %>% 
+ predict(newdata = x_new)
+
+m3 <- lm(y ~ bs(x, degree = 9), data = train)
+
+yhat_m3 <- m3 %>% 
+ predict(newdata = x_new)
+
+rmse <- function(pred, truth){
+ sqrt(mean((pred-truth)^2))
+}
+
+train_error <- list(m1=m1, m2=m2, m3=m3) %>% 
+ map_dfr(
+  .f = ~ {
+   pred <- predict(.x, newdata = train)
+   rmse_refer <- rmse(mean(train$y), train$y)
+   rmse_model <- rmse(pred, train$y) / rmse_refer
+   list(rmse = rmse_model, rsq = 1 - rmse_model/rmse_refer)
+  },
+  .id = 'model'
+ )
+
+test_error <- list(m1=m1, m2=m2, m3=m3) %>% 
+ map_dfr(
+  .f = ~ {
+   pred <- predict(.x, newdata = test)
+   rmse_refer <- rmse(mean(train$y), test$y)
+   rmse_model <- rmse(pred, test$y) / rmse_refer
+   list(rmse = rmse_model, rsq = 1 - rmse_model/rmse_refer)
+  },
+  .id = 'model'
+ )
+
+ggplot(ggdata) +
+ aes(x = x, y = y) +
+ labs(y = "Time until next blood pressure measure, months",
+      x = "Systolic blood pressure today, mm Hg") +
+ scale_y_continuous(limits = c(-2, 15),
+                    breaks = c(0, 2, 4, 6, 8, 10, 12, 14)) +
+ scale_x_continuous(limits = c(100, 160),
+                    breaks = c(100, 120, 140, 160)) +
+ geom_point(shape = 21,
+            color = 'black',
+            fill = 'orange',
+            size = 4.5)
+
+```
+
+---
+
+## Select a testing set
+
+```{r}
+
+ggplot(ggdata) + 
+ aes(x = x, y = y) + 
+ labs(y = "Time until next blood pressure measure, months",
+      x = "Systolic blood pressure today, mm Hg") + 
+ scale_y_continuous(limits = c(-2, 15),
+                    breaks = c(0, 2, 4, 6, 8, 10, 12, 14)) + 
+ scale_x_continuous(limits = c(100, 160),
+                    breaks = c(100, 120, 140, 160)) + 
+ geom_point(data = train, 
+            shape = 21, 
+            color = 'black', 
+            fill = 'orange', 
+            size = 4.5) + 
+ geom_point(data = test, 
+            shape = 21, 
+            color = 'black', 
+            fill = 'cyan4', 
+            size = 4.5)
+
+```
+
+---
+
+## Take it away
+
+```{r}
+
+ggplot(train) + 
+ aes(x = x, y = y) + 
+ labs(y = "Time until next blood pressure measure, months",
+      x = "Systolic blood pressure today, mm Hg") + 
+ scale_y_continuous(limits = c(-2, 15),
+                    breaks = c(0, 2, 4, 6, 8, 10, 12, 14)) + 
+ scale_x_continuous(limits = c(100, 160),
+                    breaks = c(100, 120, 140, 160)) + 
+ geom_point(shape = 21, 
+            color = 'black', 
+            fill = 'orange', 
+            size = 4.5)
+
+
+p <- ggplot(ggdata[-test_index, ]) + 
+ aes(x = x, y = y) + 
+ labs(y = "Time until next blood pressure measure, months",
+      x = "Systolic blood pressure today, mm Hg") + 
+ scale_y_continuous(limits = c(-2, 15),
+                    breaks = c(0, 2, 4, 6, 8, 10, 12, 14)) + 
+ scale_x_continuous(limits = c(100, 160),
+                    breaks = c(100, 120, 140, 160))
+
+```
+
+---
+
+## Apply learner 1
+
+```{r}
+
+p + points + 
+ geom_line(data = tibble(y = yhat_m1, x = x_new$x),
+           color = 'purple', 
+           size = 1.5)
+
+```
+
+---
+
+
+## Apply learner 2
+
+```{r}
+
+p + points +
+  geom_line(data = tibble(y = yhat_m2, x = x_new$x),
+           color = 'purple', 
+           size = 1.5)
 
 ```
 
 
+---
 
-## Overview
+## Apply learner 3
 
-- Decision trees
+```{r}
 
-    + Growing trees
-    
-    + Leaf nodes
+p + points +
+  geom_line(data = tibble(y = yhat_m3, x = x_new$x),
+           color = 'purple', 
+           size = 1.5)
 
-- Random Forests
+```
 
-    + Out-of-bag predictions
-    
-    + Variable importance
+---
+
+## Assess predictions in testing data
+
+```{r}
+
+test$pred <- predict(m1, test)
+test$pred_error <- test$y - test$pred
+test$vjust <- sign(test$pred_error)*-2.5 
+
+p +
+ geom_segment(data = test, 
+              aes(x=x, xend=x, y=y, yend=pred)) +
+ geom_point(data = test,
+            shape = 21, 
+            color = 'black', 
+            fill = 'cyan4', 
+            size = 4.5) + 
+ geom_line(data = tibble(y = yhat_m1, x = x_new$x),
+           color = 'purple', 
+           size = 1.5) +
+ geom_text(data = test, 
+           aes(label=round(pred_error,2),
+               vjust = vjust))
+
+
+```
+
+---
+
+## Assess predictions in testing data
+
+```{r}
+
+test$pred <- predict(m2, test)
+test$pred_error <- test$y - test$pred
+test$vjust <- sign(test$pred_error)*-2.5 
+
+p +
+ geom_segment(data = test, 
+              aes(x=x, xend=x, y=y, yend=pred)) +
+ geom_point(data = test,
+            shape = 21, 
+            color = 'black', 
+            fill = 'cyan4', 
+            size = 4.5) + 
+ geom_line(data = tibble(y = yhat_m2, x = x_new$x),
+           color = 'purple', 
+           size = 1.5) +
+ geom_text(data = test, 
+           aes(label=round(pred_error,2),
+               vjust=vjust))
+
+```
+
+---
+
+## Assess predictions in testing data
+
+```{r}
+
+test$pred <- predict(m3, test)
+test$pred_error <- test$y - test$pred
+test$vjust <- sign(test$pred_error)*-2.5 
+
+p +
+ geom_segment(data = test, 
+              aes(x=x, xend=x, y=y, yend=pred)) +
+ geom_point(data = test,
+            shape = 21, 
+            color = 'black', 
+            fill = 'cyan4', 
+            size = 4.5) + 
+ geom_line(data = tibble(y = yhat_m3, x = x_new$x),
+           color = 'purple', 
+           size = 1.5) +
+ geom_text(data = test, 
+           aes(label=round(pred_error,2),
+               vjust=vjust))
+
+```
+
+---
+
+## Assess predictions in testing data
+
+- Cross-validation highlights learners that overfit.
+
+```{r}
+
+bind_rows(train = train_error, 
+          test = test_error,
+          .id = 'data') %>% 
+ mutate(model = recode(model,
+                       m1 = "Line",
+                       m2 = "Spline",
+                       m3 = "Loose spline")) %>% 
+ mutate(
+  rmse = table_value(rmse),
+  rsq = table_glue("{100 * rsq}%")
+ ) %>% 
+ pivot_wider(names_from = data, values_from = c(rmse, rsq)) %>% 
+ select(-starts_with('rsq')) %>% 
+ gt(rowname_col = 'model', groupname_col = 'data') %>% 
+ cols_label(rmse_train = "Training error",
+            rmse_test = "Testing error") %>% 
+ cols_align('center') %>% 
+ cols_align(columns = 'model', align = 'left') %>% 
+ tab_stubhead("Learner") %>% 
+ tab_options(
+  table.width = pct(100),
+  table.font.size = px(35),
+  heading.title.font.size = px(35),
+  heading.subtitle.font.size = px(35),
+  column_labels.font.size = px(35),
+  row_group.font.size = px(35),
+  stub.font.size = px(35)
+ )
+
+```
+
+
+# Decision trees and random forests
 
 ---
 
@@ -138,14 +625,13 @@ print(results)
 Data were collected and made available by [Dr. Kristen Gorman](https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php) and the Palmer Station, a member of the [Long Term Ecological Research Network](https://lternet.edu/).
 :::
 
-# Decision trees
 
 ---
 
 Decision trees grow by recursively splitting data.
 
 
-```{r penguin-fig-demo}
+```{r}
 fig_penguins$demo
 ```
 
@@ -170,4 +656,98 @@ fig_penguins$axis_2
 The same splits, visualized as a tree
 
 ![](img/rpart_plot_classif.png){fig-align="center"}
+
+
+---
+
+## Decision trees: pros and cons
+
+Pros
+
+- Simple and intuitive visualization.
+
+- Captures conditional relationships.
+
+Cons
+
+- Difficulty with linear relationships.
+
+- Overfits when trees grow too deep.
+
+## Random forests
+
+Defn: a committee of de-correlated decision trees
+
+:::{.incremental}
+
+- Each tree on its own is fairly weak at prediction.
+
+- However, the aggregate prediction is usually very good.
+
+- Why? Consider this example
+
+  ```{r weak-vs-expert, echo=TRUE}
+  # suppose we ask 5000 weak learners a yes/no question
+  # individually, weak learners are right 51% of the time, but
+  # the probability that majority of weak learners are right is:
+  1 - pbinom(q = 2500, size = 5000, prob = 0.51)
+  ```
+
+:::
+
+## Random forests
+
+Defn: a committee of de-correlated decision trees
+
+- Each tree on its own is fairly weak at prediction.
+
+- However, the aggregate prediction is usually very good.
+
+- How are they de-correlated? 
+
+    + Random subset of (bootstrapped) data for each tree.
+    
+    + Random subset of predictors considered for each split.
+
+
+# Why `aorsf`?
+
+# Using `aorsf`
+
+
+## Spectral data
+
+- Large number of continuous, correlated predictors.
+
+- Example: `modeldata::meats`
+
+```{r}
+
+library(modeldata)
+
+dplyr::transmute(meats, protein, x_001, x_002, x_003, x_004, x_005,
+                 x_006, x_007, x_008,
+                 `...` = paste("..."), x_100) 
+
+```
+
+## Spectral data
+
+- Large number of continuous, correlated predictors.
+
+- Example: `modeldatatoo::data_chimiometrie_2019()`
+
+```{r}
+
+chim <- modeldatatoo::data_chimiometrie_2019()
+
+dplyr::transmute(chim, soy_oil, wvlgth_001, wvlgth_002, 
+                 wvlgth_003, wvlgth_004,
+                 `...` = paste("..."), wvlgth_550) 
+
+```
+
+
+
+
 

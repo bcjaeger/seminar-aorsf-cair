@@ -1,0 +1,15 @@
+ggplot2
+modeldata
+tidyverse
+tibble
+tidyr
+readr
+purrr
+dplyr
+stringr
+forcats
+lubridate
+magick
+ggforce
+gt
+table.glue

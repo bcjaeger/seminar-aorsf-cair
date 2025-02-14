@@ -11,27 +11,167 @@
     "href": "index.html#bottom-line-up-front",
     "title": "Oblique Random Forests",
     "section": "Bottom line up front",
-    "text": "Bottom line up front\n\nOblique random forests are generally good prediction models, and they are very good for spectral data.\naorsf provides a unified, simple, and fast interface for oblique random forests."
-  },
-  {
-    "objectID": "index.html#spectral-data",
-    "href": "index.html#spectral-data",
-    "title": "Oblique Random Forests",
-    "section": "Spectral data",
-    "text": "Spectral data\n\n\n# A tibble: 215 × 103\n   x_001 x_002 x_003 x_004 x_005 x_006 x_007 x_008 x_009 x_010 x_011 x_012 x_013\n   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;\n 1  2.62  2.62  2.62  2.62  2.62  2.62  2.62  2.62  2.63  2.63  2.63  2.63  2.64\n 2  2.83  2.84  2.84  2.85  2.85  2.86  2.86  2.87  2.87  2.88  2.88  2.89  2.90\n 3  2.58  2.58  2.59  2.59  2.59  2.59  2.59  2.60  2.60  2.60  2.60  2.61  2.61\n 4  2.82  2.82  2.83  2.83  2.83  2.83  2.83  2.84  2.84  2.84  2.84  2.85  2.85\n 5  2.79  2.79  2.79  2.79  2.80  2.80  2.80  2.80  2.81  2.81  2.81  2.82  2.82\n 6  3.01  3.02  3.02  3.03  3.03  3.04  3.04  3.05  3.06  3.06  3.07  3.08  3.09\n 7  2.99  2.99  3.00  3.01  3.01  3.02  3.02  3.03  3.04  3.04  3.05  3.06  3.07\n 8  2.53  2.53  2.53  2.53  2.53  2.53  2.53  2.53  2.54  2.54  2.54  2.54  2.54\n 9  3.27  3.28  3.29  3.29  3.30  3.31  3.31  3.32  3.33  3.33  3.34  3.35  3.36\n10  3.40  3.41  3.41  3.42  3.43  3.43  3.44  3.45  3.46  3.47  3.48  3.48  3.49\n# ℹ 205 more rows\n# ℹ 90 more variables: x_014 &lt;dbl&gt;, x_015 &lt;dbl&gt;, x_016 &lt;dbl&gt;, x_017 &lt;dbl&gt;,\n#   x_018 &lt;dbl&gt;, x_019 &lt;dbl&gt;, x_020 &lt;dbl&gt;, x_021 &lt;dbl&gt;, x_022 &lt;dbl&gt;,\n#   x_023 &lt;dbl&gt;, x_024 &lt;dbl&gt;, x_025 &lt;dbl&gt;, x_026 &lt;dbl&gt;, x_027 &lt;dbl&gt;,\n#   x_028 &lt;dbl&gt;, x_029 &lt;dbl&gt;, x_030 &lt;dbl&gt;, x_031 &lt;dbl&gt;, x_032 &lt;dbl&gt;,\n#   x_033 &lt;dbl&gt;, x_034 &lt;dbl&gt;, x_035 &lt;dbl&gt;, x_036 &lt;dbl&gt;, x_037 &lt;dbl&gt;,\n#   x_038 &lt;dbl&gt;, x_039 &lt;dbl&gt;, x_040 &lt;dbl&gt;, x_041 &lt;dbl&gt;, x_042 &lt;dbl&gt;, …"
-  },
-  {
-    "objectID": "index.html#section",
-    "href": "index.html#section",
-    "title": "Oblique Random Forests",
-    "section": "",
-    "text": "library(tidymodels)\nlibrary(bonsai)\nlibrary(modeldata)\n\n# Load the dataset\ndata(meats)\n\n# Define models\naxis &lt;- rand_forest(mode = \"regression\", engine = \"ranger\")\noblique &lt;- rand_forest(mode = \"regression\", engine = \"aorsf\")\n\n# Define cross-validation folds\nset.seed(123)\nsplits &lt;- vfold_cv(meats, v = 5)  # 5-fold CV\n\n# Define a recipe (optional, but recommended)\nmeats_recipe &lt;- recipe(protein ~ ., data = meats) %&gt;%\n  step_normalize(all_numeric_predictors()) \n\n# Create workflows\naxis_wf &lt;- workflow() %&gt;%\n  add_model(axis) %&gt;%\n  add_recipe(meats_recipe)\n\noblique_wf &lt;- workflow() %&gt;%\n  add_model(oblique) %&gt;%\n  add_recipe(meats_recipe)"
+    "text": "Bottom line up front\n\nOblique random forests are good at prediction, and are likely the best tool for spectral data (defined later).\naorsf provides a unified, simple, and fast interface for oblique random forests."
   },
   {
     "objectID": "index.html#overview",
     "href": "index.html#overview",
     "title": "Oblique Random Forests",
     "section": "Overview",
-    "text": "Overview\n\nDecision trees\n\nGrowing trees\nLeaf nodes\n\nRandom Forests\n\nOut-of-bag predictions\nVariable importance"
+    "text": "Overview\n\nBackground\n\nSupervised learning\nDecision trees and random forests\n\naorsf\n\nWhy? (statement of need)\nHow? (use cases)"
+  },
+  {
+    "objectID": "index.html#learners",
+    "href": "index.html#learners",
+    "title": "Oblique Random Forests",
+    "section": "Learners",
+    "text": "Learners\nA learner is a recipe for a prediction model\n\n\nA learner is not the same thing as a prediction model\nA recipe is not the same thing as food.\nThis distinction is important for cross-validation (defined soon)"
+  },
+  {
+    "objectID": "index.html#find-a-good-learner-for-these-data",
+    "href": "index.html#find-a-good-learner-for-these-data",
+    "title": "Oblique Random Forests",
+    "section": "Find a good learner for these data",
+    "text": "Find a good learner for these data"
+  },
+  {
+    "objectID": "index.html#learner-1-find-the-line-of-best-fit",
+    "href": "index.html#learner-1-find-the-line-of-best-fit",
+    "title": "Oblique Random Forests",
+    "section": "Learner 1: find the line of best fit",
+    "text": "Learner 1: find the line of best fit"
+  },
+  {
+    "objectID": "index.html#learner-1-find-the-line-of-best-fit-1",
+    "href": "index.html#learner-1-find-the-line-of-best-fit-1",
+    "title": "Oblique Random Forests",
+    "section": "Learner 1: find the line of best fit",
+    "text": "Learner 1: find the line of best fit"
+  },
+  {
+    "objectID": "index.html#learner-2-use-a-spline",
+    "href": "index.html#learner-2-use-a-spline",
+    "title": "Oblique Random Forests",
+    "section": "Learner 2: Use a spline",
+    "text": "Learner 2: Use a spline"
+  },
+  {
+    "objectID": "index.html#learner-3-loosen-the-spline",
+    "href": "index.html#learner-3-loosen-the-spline",
+    "title": "Oblique Random Forests",
+    "section": "Learner 3: Loosen the spline",
+    "text": "Learner 3: Loosen the spline"
+  },
+  {
+    "objectID": "index.html#cross-validation",
+    "href": "index.html#cross-validation",
+    "title": "Oblique Random Forests",
+    "section": "Cross validation",
+    "text": "Cross validation\nThis technique allows you to objectively compare learners\n\n\nHold some data out as a testing set\nApply each learner to the remaining data (training set)\nPredict the outcome using each model (one per learner)\nEvaluate prediction accuracy\nRepeat with different held out data\nEvaluate average prediction accuracy for each learner"
+  },
+  {
+    "objectID": "index.html#all-our-data",
+    "href": "index.html#all-our-data",
+    "title": "Oblique Random Forests",
+    "section": "All our data",
+    "text": "All our data"
+  },
+  {
+    "objectID": "index.html#select-a-testing-set",
+    "href": "index.html#select-a-testing-set",
+    "title": "Oblique Random Forests",
+    "section": "Select a testing set",
+    "text": "Select a testing set"
+  },
+  {
+    "objectID": "index.html#take-it-away",
+    "href": "index.html#take-it-away",
+    "title": "Oblique Random Forests",
+    "section": "Take it away",
+    "text": "Take it away"
+  },
+  {
+    "objectID": "index.html#apply-learner-1",
+    "href": "index.html#apply-learner-1",
+    "title": "Oblique Random Forests",
+    "section": "Apply learner 1",
+    "text": "Apply learner 1"
+  },
+  {
+    "objectID": "index.html#apply-learner-2",
+    "href": "index.html#apply-learner-2",
+    "title": "Oblique Random Forests",
+    "section": "Apply learner 2",
+    "text": "Apply learner 2"
+  },
+  {
+    "objectID": "index.html#apply-learner-3",
+    "href": "index.html#apply-learner-3",
+    "title": "Oblique Random Forests",
+    "section": "Apply learner 3",
+    "text": "Apply learner 3"
+  },
+  {
+    "objectID": "index.html#assess-predictions-in-testing-data",
+    "href": "index.html#assess-predictions-in-testing-data",
+    "title": "Oblique Random Forests",
+    "section": "Assess predictions in testing data",
+    "text": "Assess predictions in testing data"
+  },
+  {
+    "objectID": "index.html#assess-predictions-in-testing-data-1",
+    "href": "index.html#assess-predictions-in-testing-data-1",
+    "title": "Oblique Random Forests",
+    "section": "Assess predictions in testing data",
+    "text": "Assess predictions in testing data"
+  },
+  {
+    "objectID": "index.html#assess-predictions-in-testing-data-2",
+    "href": "index.html#assess-predictions-in-testing-data-2",
+    "title": "Oblique Random Forests",
+    "section": "Assess predictions in testing data",
+    "text": "Assess predictions in testing data"
+  },
+  {
+    "objectID": "index.html#assess-predictions-in-testing-data-3",
+    "href": "index.html#assess-predictions-in-testing-data-3",
+    "title": "Oblique Random Forests",
+    "section": "Assess predictions in testing data",
+    "text": "Assess predictions in testing data\n\nCross-validation highlights learners that overfit.\n\n\n\n\n\n\n\n\n\nLearner\nTraining error\nTesting error\n\n\n\n\nLine\n0.41\n0.34\n\n\nSpline\n0.28\n0.22\n\n\nLoose spline\n0.27\n0.35"
+  },
+  {
+    "objectID": "index.html#decision-trees-pros-and-cons",
+    "href": "index.html#decision-trees-pros-and-cons",
+    "title": "Oblique Random Forests",
+    "section": "Decision trees: pros and cons",
+    "text": "Decision trees: pros and cons\nPros\n\nSimple and intuitive visualization.\nCaptures conditional relationships.\n\nCons\n\nDifficulty with linear relationships.\nOverfits when trees grow too deep."
+  },
+  {
+    "objectID": "index.html#random-forests",
+    "href": "index.html#random-forests",
+    "title": "Oblique Random Forests",
+    "section": "Random forests",
+    "text": "Random forests\nDefn: a committee of de-correlated decision trees\n\n\nEach tree on its own is fairly weak at prediction.\nHowever, the aggregate prediction is usually very good.\nWhy? Consider this example\n\n# suppose we ask 5000 weak learners a yes/no question\n# individually, weak learners are right 51% of the time, but\n# the probability that majority of weak learners are right is:\n1 - pbinom(q = 2500, size = 5000, prob = 0.51)\n\n[1] 0.9192858"
+  },
+  {
+    "objectID": "index.html#random-forests-1",
+    "href": "index.html#random-forests-1",
+    "title": "Oblique Random Forests",
+    "section": "Random forests",
+    "text": "Random forests\nDefn: a committee of de-correlated decision trees\n\nEach tree on its own is fairly weak at prediction.\nHowever, the aggregate prediction is usually very good.\nHow are they de-correlated?\n\nRandom subsets of (bootstrapped) data for each tree\nRandom subset of predictors considered for each split"
+  },
+  {
+    "objectID": "index.html#spectral-data",
+    "href": "index.html#spectral-data",
+    "title": "Oblique Random Forests",
+    "section": "Spectral data",
+    "text": "Spectral data\n\nLarge number of continuous, correlated predictors.\nExample: modeldata::meats\n\n\n\n# A tibble: 215 × 11\n   protein x_001 x_002 x_003 x_004 x_005 x_006 x_007 x_008 ...   x_100\n     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt;\n 1    16.7  2.62  2.62  2.62  2.62  2.62  2.62  2.62  2.62 ...    2.82\n 2    13.5  2.83  2.84  2.84  2.85  2.85  2.86  2.86  2.87 ...    3.18\n 3    20.5  2.58  2.58  2.59  2.59  2.59  2.59  2.59  2.60 ...    2.55\n 4    20.7  2.82  2.82  2.83  2.83  2.83  2.83  2.83  2.84 ...    2.80\n 5    15.5  2.79  2.79  2.79  2.79  2.80  2.80  2.80  2.80 ...    3.14\n 6    13.7  3.01  3.02  3.02  3.03  3.03  3.04  3.04  3.05 ...    3.45\n 7    13.7  2.99  2.99  3.00  3.01  3.01  3.02  3.02  3.03 ...    3.38\n 8    19.3  2.53  2.53  2.53  2.53  2.53  2.53  2.53  2.53 ...    2.71\n 9    17.7  3.27  3.28  3.29  3.29  3.30  3.31  3.31  3.32 ...    3.65\n10    17.7  3.40  3.41  3.41  3.42  3.43  3.43  3.44  3.45 ...    3.77\n# ℹ 205 more rows"
+  },
+  {
+    "objectID": "index.html#spectral-data-1",
+    "href": "index.html#spectral-data-1",
+    "title": "Oblique Random Forests",
+    "section": "Spectral data",
+    "text": "Spectral data\n\nLarge number of continuous, correlated predictors.\nExample: modeldatatoo::data_chimiometrie_2019()\n\n\n\n# A tibble: 6,915 × 7\n   soy_oil wvlgth_001 wvlgth_002 wvlgth_003 wvlgth_004 ...   wvlgth_550\n     &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt;\n 1     2.1      0.208      0.207      0.207      0.207 ...        0.592\n 2     2.1      0.206      0.206      0.206      0.206 ...        0.600\n 3     2.1      0.207      0.207      0.207      0.206 ...        0.602\n 4     0.5      0.206      0.206      0.205      0.205 ...        0.608\n 5     0.5      0.201      0.200      0.200      0.200 ...        0.601\n 6     0.5      0.206      0.205      0.205      0.205 ...        0.613\n 7     0.5      0.202      0.202      0.201      0.201 ...        0.614\n 8     0.5      0.205      0.205      0.204      0.204 ...        0.585\n 9     0.5      0.205      0.205      0.204      0.204 ...        0.594\n10     0.5      0.207      0.207      0.207      0.207 ...        0.589\n# ℹ 6,905 more rows"
   }
 ]

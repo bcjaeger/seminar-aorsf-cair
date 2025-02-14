@@ -1,0 +1,16 @@
+.reveal .slide-background {
+  position: relative;
+}
+
+.reveal .slide-background::after {
+  content: "";
+  background-image: url("img/aorsf_hex.png"); /* Replace with your logo file */
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 80px;  /* Adjust logo width */
+  height: 80px; /* Adjust logo height */
+  position: fixed;
+  top: 10px;
+  right: 10px;
+}
+
