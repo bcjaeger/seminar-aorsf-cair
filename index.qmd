@@ -62,7 +62,9 @@ withr::with_dir(
 
 Available online: 
 
-- [https://bcjaeger.github.io/seminar-aorsf-cair](https://bcjaeger.github.io/seminar-aorsf-cair)
+- [https://www.byronjaeger.com/talk](https://www.byronjaeger.com/talk)
+
+- Google "Byron Jaeger talk"
 
 ## Overview
 
