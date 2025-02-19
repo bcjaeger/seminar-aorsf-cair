@@ -11,14 +11,21 @@
     "href": "index.html#bottom-line-up-front",
     "title": "Oblique Random Forests",
     "section": "Bottom line up front",
-    "text": "Bottom line up front\n\nOblique random forests are good at prediction, and are likely the best tool for spectral data (defined later).\naorsf provides a unified, simple, and fast interface for oblique random forests."
+    "text": "Bottom line up front\n\nOblique random forests are good at prediction, and they are excellent tools for spectral data (defined later).\naorsf provides a unified, simple, and fast interface for oblique random forests."
+  },
+  {
+    "objectID": "index.html#slides",
+    "href": "index.html#slides",
+    "title": "Oblique Random Forests",
+    "section": "Slides",
+    "text": "Slides\nAvailable online:\n\nhttps://bcjaeger.github.io/seminar-aorsf-cair"
   },
   {
     "objectID": "index.html#overview",
     "href": "index.html#overview",
     "title": "Oblique Random Forests",
     "section": "Overview",
-    "text": "Overview\n\nBackground\n\nSupervised learning\nDecision trees and random forests\n\naorsf\n\nWhy? (statement of need)\nHow? (use cases)"
+    "text": "Overview\n\nBackground\n\nSupervised learning\nDecision trees and random forests\n\nOblique random forests\n\nWhat is oblique?\naorsf statement of need\naorsf demo"
   },
   {
     "objectID": "index.html#learners",
@@ -67,7 +74,7 @@
     "href": "index.html#cross-validation",
     "title": "Oblique Random Forests",
     "section": "Cross validation",
-    "text": "Cross validation\nThis technique allows you to objectively compare learners\n\n\nHold some data out as a testing set\nApply each learner to the remaining data (training set)\nPredict the outcome using each model (one per learner)\nEvaluate prediction accuracy\nRepeat with different held out data\nEvaluate average prediction accuracy for each learner"
+    "text": "Cross validation\nThis technique allows you to objectively compare learners\n\n\nHold some data out as a testing set\nApply each learner to the remaining data (training set)\nPredict the outcome using each model (one per learner)\nEvaluate prediction accuracy\nRepeat with different held out data\nCompare average prediction accuracy by learner"
   },
   {
     "objectID": "index.html#all-our-data",
@@ -140,38 +147,150 @@
     "text": "Assess predictions in testing data\n\nCross-validation highlights learners that overfit.\n\n\n\n\n\n\n\n\n\nLearner\nTraining error\nTesting error\n\n\n\n\nLine\n0.41\n0.34\n\n\nSpline\n0.28\n0.22\n\n\nLoose spline\n0.27\n0.35"
   },
   {
-    "objectID": "index.html#decision-trees-pros-and-cons",
-    "href": "index.html#decision-trees-pros-and-cons",
+    "objectID": "index.html#decision-trees",
+    "href": "index.html#decision-trees",
     "title": "Oblique Random Forests",
-    "section": "Decision trees: pros and cons",
-    "text": "Decision trees: pros and cons\nPros\n\nSimple and intuitive visualization.\nCaptures conditional relationships.\n\nCons\n\nDifficulty with linear relationships.\nOverfits when trees grow too deep."
+    "section": "Decision trees",
+    "text": "Decision trees\n\nPros\n\nSimple and intuitive visualization.\nCaptures conditional relationships.\n\nCons\n\nDifficulty with linear relationships.\nOverfits when trees grow too deep."
   },
   {
     "objectID": "index.html#random-forests",
     "href": "index.html#random-forests",
     "title": "Oblique Random Forests",
     "section": "Random forests",
-    "text": "Random forests\nDefn: a committee of de-correlated decision trees\n\n\nEach tree on its own is fairly weak at prediction.\nHowever, the aggregate prediction is usually very good.\nWhy? Consider this example\n\n# suppose we ask 5000 weak learners a yes/no question\n# individually, weak learners are right 51% of the time, but\n# the probability that majority of weak learners are right is:\n1 - pbinom(q = 2500, size = 5000, prob = 0.51)\n\n[1] 0.9192858"
+    "text": "Random forests\nDefn: an ensemble of de-correlated decision trees\n\n\nEach tree on its own is fairly weak at prediction.\nHowever, the aggregate prediction is usually very good.\nWhy? Consider this example\n\n# suppose we ask 5000 independent weak learners a yes/no question.\n# Individually, weak learners are right 51% of the time. However,\n# the probability that a majority of weak learners are right is 92%.\n# proof:\n1 - pbinom(q = 2500, size = 5000, prob = 0.51)\n\n[1] 0.9192858"
   },
   {
     "objectID": "index.html#random-forests-1",
     "href": "index.html#random-forests-1",
     "title": "Oblique Random Forests",
     "section": "Random forests",
-    "text": "Random forests\nDefn: a committee of de-correlated decision trees\n\nEach tree on its own is fairly weak at prediction.\nHowever, the aggregate prediction is usually very good.\nHow are they de-correlated?\n\nRandom subsets of (bootstrapped) data for each tree\nRandom subset of predictors considered for each split"
+    "text": "Random forests\nDefn: an ensemble of de-correlated decision trees\n\nEach tree on its own is fairly weak at prediction.\nHowever, the aggregate prediction is usually very good.\nHow are they de-correlated?\n\nRandom subset of (bootstrapped) data for each tree.\nRandom subset of predictors considered for each split."
   },
   {
-    "objectID": "index.html#spectral-data",
-    "href": "index.html#spectral-data",
+    "objectID": "index.html#what-is-oblique",
+    "href": "index.html#what-is-oblique",
     "title": "Oblique Random Forests",
-    "section": "Spectral data",
-    "text": "Spectral data\n\nLarge number of continuous, correlated predictors.\nExample: modeldata::meats\n\n\n\n# A tibble: 215 × 11\n   protein x_001 x_002 x_003 x_004 x_005 x_006 x_007 x_008 ...   x_100\n     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt;\n 1    16.7  2.62  2.62  2.62  2.62  2.62  2.62  2.62  2.62 ...    2.82\n 2    13.5  2.83  2.84  2.84  2.85  2.85  2.86  2.86  2.87 ...    3.18\n 3    20.5  2.58  2.58  2.59  2.59  2.59  2.59  2.59  2.60 ...    2.55\n 4    20.7  2.82  2.82  2.83  2.83  2.83  2.83  2.83  2.84 ...    2.80\n 5    15.5  2.79  2.79  2.79  2.79  2.80  2.80  2.80  2.80 ...    3.14\n 6    13.7  3.01  3.02  3.02  3.03  3.03  3.04  3.04  3.05 ...    3.45\n 7    13.7  2.99  2.99  3.00  3.01  3.01  3.02  3.02  3.03 ...    3.38\n 8    19.3  2.53  2.53  2.53  2.53  2.53  2.53  2.53  2.53 ...    2.71\n 9    17.7  3.27  3.28  3.29  3.29  3.30  3.31  3.31  3.32 ...    3.65\n10    17.7  3.40  3.41  3.41  3.42  3.43  3.43  3.44  3.45 ...    3.77\n# ℹ 205 more rows"
+    "section": "What is oblique?",
+    "text": "What is oblique?"
   },
   {
-    "objectID": "index.html#spectral-data-1",
-    "href": "index.html#spectral-data-1",
+    "objectID": "index.html#are-oblique-splits-helpful",
+    "href": "index.html#are-oblique-splits-helpful",
     "title": "Oblique Random Forests",
-    "section": "Spectral data",
-    "text": "Spectral data\n\nLarge number of continuous, correlated predictors.\nExample: modeldatatoo::data_chimiometrie_2019()\n\n\n\n# A tibble: 6,915 × 7\n   soy_oil wvlgth_001 wvlgth_002 wvlgth_003 wvlgth_004 ...   wvlgth_550\n     &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt;\n 1     2.1      0.208      0.207      0.207      0.207 ...        0.592\n 2     2.1      0.206      0.206      0.206      0.206 ...        0.600\n 3     2.1      0.207      0.207      0.207      0.206 ...        0.602\n 4     0.5      0.206      0.206      0.205      0.205 ...        0.608\n 5     0.5      0.201      0.200      0.200      0.200 ...        0.601\n 6     0.5      0.206      0.205      0.205      0.205 ...        0.613\n 7     0.5      0.202      0.202      0.201      0.201 ...        0.614\n 8     0.5      0.205      0.205      0.204      0.204 ...        0.585\n 9     0.5      0.205      0.205      0.204      0.204 ...        0.594\n10     0.5      0.207      0.207      0.207      0.207 ...        0.589\n# ℹ 6,905 more rows"
+    "section": "Are oblique splits helpful?",
+    "text": "Are oblique splits helpful?\nFor prediction, the answer is usually yes.\n\nLeo Breiman, author of the random forest, noted this:\n\n\n\nThis result has been replicated in multiple studies:\n\nMenze et al, Katuwal et al, Tomita et al, and Jaeger et al\n\nEvidence on consistency of oblique trees is emerging."
+  },
+  {
+    "objectID": "index.html#are-oblique-splits-helpful-1",
+    "href": "index.html#are-oblique-splits-helpful-1",
+    "title": "Oblique Random Forests",
+    "section": "Are oblique splits helpful?",
+    "text": "Are oblique splits helpful?\nFor computational efficiency, the answer is no.\n\ndata_bench &lt;- as.data.frame(\n mutate(drop_na(penguins), species=factor(species))\n)\n\nbench &lt;- microbenchmark(\n axis_ranger = ranger(formula = species ~ bill_length_mm + flipper_length_mm, \n                      data = data_bench),\n axis_rfsrc = rfsrc(formula = species ~ bill_length_mm + flipper_length_mm,\n                    data = data_bench),\n oblique_aorsf = orsf(formula = species ~ bill_length_mm + flipper_length_mm, \n                      data = data_bench),\n oblique_odrf = ODRF(formula = species ~ bill_length_mm + flipper_length_mm, \n                     data = data_bench),\n times = 10\n)"
+  },
+  {
+    "objectID": "index.html#are-oblique-splits-helpful-2",
+    "href": "index.html#are-oblique-splits-helpful-2",
+    "title": "Oblique Random Forests",
+    "section": "Are oblique splits helpful?",
+    "text": "Are oblique splits helpful?\nFor computational efficiency, the answer is no.\n\nprint(bench, signif=3, unit='relative')\n\nUnit: relative\n          expr    min     lq   mean median      uq    max neval cld\n   axis_ranger   1.00   1.00   1.00   1.00   1.000   1.00    10  a \n    axis_rfsrc   1.78   1.77   1.22   1.75   0.732   1.08    10  a \n oblique_aorsf   1.57   1.96   1.43   1.93   0.920   1.39    10  a \n  oblique_odrf 554.00 530.00 291.00 463.00 174.000 134.00    10   b"
+  },
+  {
+    "objectID": "index.html#statement-of-need",
+    "href": "index.html#statement-of-need",
+    "title": "Oblique Random Forests",
+    "section": "Statement of need",
+    "text": "Statement of need\n\n\nOblique random forests are under-utilized, with high computational cost. Existing software focus on specific implementations, limiting scope.\naorsf is unifying oblique random forest software.\n\nFast C++ backend based on ranger.\nSupports survival, regression, and classification.\nSupports custom functions for oblique splitting.\nPart of tidymodels and mlr3.\nFast variable importance and partial dependence."
+  },
+  {
+    "objectID": "index.html#a-stands-for-accelerated",
+    "href": "index.html#a-stands-for-accelerated",
+    "title": "Oblique Random Forests",
+    "section": "“a” stands for “accelerated”",
+    "text": "“a” stands for “accelerated”\nOur approach for linear combinations of predictors:\n\nFit a regression model to data in the current tree node\n\nNote: logistic and Cox models iterate until converging\n\nInstead of iterating until convergence, stop after one.\nUse the beta coefficients from the model as coefficients for the linear combination of predictors."
+  },
+  {
+    "objectID": "index.html#demo-with-spectral-data",
+    "href": "index.html#demo-with-spectral-data",
+    "title": "Oblique Random Forests",
+    "section": "Demo with spectral data",
+    "text": "Demo with spectral data\nSpectral data include continuous, correlated predictors.\n\nExample: modeldata::meats\n\n\n\n\n\n\nprotein\nx_001\nx_002\n…\nx_100\n\n\n\n\n16.7\n2.61776\n2.61814\n…\n2.81920\n\n\n13.5\n2.83454\n2.83871\n…\n3.17942\n\n\n20.5\n2.58284\n2.58458\n…\n2.54816\n\n\n20.7\n2.82286\n2.82460\n…\n2.79622"
+  },
+  {
+    "objectID": "index.html#demo-with-spectral-data-1",
+    "href": "index.html#demo-with-spectral-data-1",
+    "title": "Oblique Random Forests",
+    "section": "Demo with spectral data",
+    "text": "Demo with spectral data\n\nDescription: Data are recorded on a Tecator Infratec Food and Feed Analyzer working in the wavelength range 850 - 1050 nm by the Near Infrared Transmission principle. Each sample contains finely chopped pure meat with different moisture, fat and protein contents\nDetails: For each meat sample the data consists of a 100 channel spectrum of absorbances and the contents of moisture (water), fat and protein. The absorbance is -log10 of the transmittance measured by the spectrometer. The three contents, measured in percent, are determined by analytic chemistry"
+  },
+  {
+    "objectID": "index.html#demo-with-spectral-data-2",
+    "href": "index.html#demo-with-spectral-data-2",
+    "title": "Oblique Random Forests",
+    "section": "Demo with spectral data",
+    "text": "Demo with spectral data\n\n\nMake train & test sets:\n\ntrn_rows &lt;- \n sample(nrow(meats), 100)\n\nmeats_train &lt;- meats[trn_rows, ]\n\nmeats_test &lt;- meats[-trn_rows, ]\n\n\nTrain axis & oblique forests:\n\nfit_aorsf &lt;- \n orsf(protein ~ ., \n      data = meats_train)\nfit_ranger &lt;- \n ranger(protein ~.,\n        data = meats_train)\n\n\nEvaluate \\(R^2\\) of predictions (higher is better):\n\nprd_aorsf &lt;- predict(fit_aorsf, new_data = meats_test, pred_simplify = T)\nprd_ranger &lt;- predict(fit_ranger, data = meats_test)$predictions\n\nrsq_vec(estimate = prd_aorsf, truth = meats_test$protein)\n\n[1] 0.9356059\n\nrsq_vec(estimate = prd_ranger, truth = meats_test$protein)\n\n[1] 0.6872002"
+  },
+  {
+    "objectID": "index.html#demo-with-spectral-data-3",
+    "href": "index.html#demo-with-spectral-data-3",
+    "title": "Oblique Random Forests",
+    "section": "Demo with spectral data",
+    "text": "Demo with spectral data\naorsf supports variable importance\n\norsf_vi(fit_aorsf)[1:3]\n\n      fat     x_029     x_028 \n0.2355890 0.2328767 0.2315789 \n\n\nAnd multivariable-adjusted summaries for each predictor:\n\norsf_summarize_uni(fit_aorsf, n_variables = 1)\n\n\n-- fat (VI Rank: 1) ------------------------\n\n        |--------- Expected value ---------|\n  Value     Mean   Median   25th %   75th %\n &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;\n   5.90 18.29500 19.33016 16.37537 20.19645\n   7.28 18.27809 19.32573 16.36435 20.17653\n   15.7 18.12412 19.20343 16.31901 19.95582\n   29.2 17.88790 18.98651 15.98738 19.70517\n   37.9 17.75646 18.84186 15.91031 19.60750\n\n Predicted expected value for top 1 predictors"
+  },
+  {
+    "objectID": "index.html#demo-with-spectral-data-4",
+    "href": "index.html#demo-with-spectral-data-4",
+    "title": "Oblique Random Forests",
+    "section": "Demo with spectral data",
+    "text": "Demo with spectral data\naorsf can also look for pairwise interactions (details here)\n\ntop_preds &lt;- names(orsf_vi(fit_aorsf)[1:10])\n\n# warning: this can get very computationally expensive.\n# use subsets of &lt;= 10 predictors to keep it efficient.\nvint &lt;- orsf_vint(fit_aorsf, predictors = top_preds)\n\nvint[1:10, ]\n\n     interaction       score          pd_values\n          &lt;char&gt;       &lt;num&gt;             &lt;list&gt;\n 1: x_029..x_014 0.010221001 &lt;data.table[25x9]&gt;\n 2: x_030..x_035 0.010012501 &lt;data.table[25x9]&gt;\n 3: x_029..x_034 0.008032039 &lt;data.table[25x9]&gt;\n 4: x_028..x_014 0.008020588 &lt;data.table[25x9]&gt;\n 5: x_034..x_026 0.007513260 &lt;data.table[25x9]&gt;\n 6: x_034..x_035 0.007083606 &lt;data.table[25x9]&gt;\n 7: x_029..x_035 0.006955590 &lt;data.table[25x9]&gt;\n 8: x_030..x_014 0.006674831 &lt;data.table[25x9]&gt;\n 9: x_027..x_014 0.006570676 &lt;data.table[25x9]&gt;\n10: x_034..x_030 0.006246572 &lt;data.table[25x9]&gt;"
+  },
+  {
+    "objectID": "index.html#demo-with-spectral-data-5",
+    "href": "index.html#demo-with-spectral-data-5",
+    "title": "Oblique Random Forests",
+    "section": "Demo with spectral data",
+    "text": "Demo with spectral data\nand sometimes it finds them."
+  },
+  {
+    "objectID": "index.html#demo-with-spectral-data-6",
+    "href": "index.html#demo-with-spectral-data-6",
+    "title": "Oblique Random Forests",
+    "section": "Demo with spectral data",
+    "text": "Demo with spectral data\nSanity check the result using regression\n\n\n\nanova(\n lm(\n  protein ~ bs(x_029)*bs(x_014), \n  data = meats_train\n )\n)\n\nanova(\n lm(\n  protein ~ bs(x_030)*bs(x_035),\n  data = meats_train\n )\n)\n\n\n\n\n# A tibble: 4 × 2\n  term                p.value\n  &lt;chr&gt;               &lt;chr&gt;  \n1 bs(x_029)           &lt;.001  \n2 bs(x_014)           &lt;.001  \n3 bs(x_029):bs(x_014) &lt;.001  \n4 Residuals           --     \n\n\n# A tibble: 4 × 2\n  term                p.value\n  &lt;chr&gt;               &lt;chr&gt;  \n1 bs(x_030)           &lt;.001  \n2 bs(x_035)           &lt;.001  \n3 bs(x_030):bs(x_035) .20    \n4 Residuals           --"
+  },
+  {
+    "objectID": "index.html#more-spectral-data",
+    "href": "index.html#more-spectral-data",
+    "title": "Oblique Random Forests",
+    "section": "More spectral data",
+    "text": "More spectral data\n\nHere is a much larger spectral data example\nExample: modeldatatoo::data_chimiometrie_2019()\n\n\n\n# A tibble: 6,915 × 7\n   soy_oil wvlgth_001 wvlgth_002 wvlgth_003 wvlgth_004 ...   wvlgth_550\n     &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt;\n 1     2.1      0.208      0.207      0.207      0.207 ...        0.592\n 2     2.1      0.206      0.206      0.206      0.206 ...        0.600\n 3     2.1      0.207      0.207      0.207      0.206 ...        0.602\n 4     0.5      0.206      0.206      0.205      0.205 ...        0.608\n 5     0.5      0.201      0.200      0.200      0.200 ...        0.601\n 6     0.5      0.206      0.205      0.205      0.205 ...        0.613\n 7     0.5      0.202      0.202      0.201      0.201 ...        0.614\n 8     0.5      0.205      0.205      0.204      0.204 ...        0.585\n 9     0.5      0.205      0.205      0.204      0.204 ...        0.594\n10     0.5      0.207      0.207      0.207      0.207 ...        0.589\n# ℹ 6,905 more rows"
+  },
+  {
+    "objectID": "index.html#more-spectral-data-1",
+    "href": "index.html#more-spectral-data-1",
+    "title": "Oblique Random Forests",
+    "section": "More spectral data",
+    "text": "More spectral data\n\nDescription: This data set was published as the challenge at the Chimiometrie 2019 conference held in Montpellier and is available at the conference homepage. The data consist of 6915 training spectra and 600 test spectra measured at 550 (unknown) wavelengths. The target was the amount of soy oil (0-5.5%), ucerne (0-40%) and barley (0-52%) in a mixture"
+  },
+  {
+    "objectID": "index.html#bigger-benchmark",
+    "href": "index.html#bigger-benchmark",
+    "title": "Oblique Random Forests",
+    "section": "Bigger benchmark",
+    "text": "Bigger benchmark\nNow we’ll fit 6 learners in addition to aorsf and use nested cross-validation to tune each approach, including:\n\nconsider 16 data pre-processing approaches (details here)\n\nincludes option for each learner to use a variable selection step and data transformation (i.e., principal component analysis)\n\nimplement tuning for each learner (details here)\n\nAll code available here"
+  },
+  {
+    "objectID": "index.html#conclusion",
+    "href": "index.html#conclusion",
+    "title": "Oblique Random Forests",
+    "section": "Conclusion",
+    "text": "Conclusion\n\nOblique random forests are good at prediction, and they are excellent tools for spectral data.\naorsf provides a unified, simple, and fast interface for oblique random forests.\nLearn more here"
+  },
+  {
+    "objectID": "index.html#why-out-of-bag-predictions-matter",
+    "href": "index.html#why-out-of-bag-predictions-matter",
+    "title": "Oblique Random Forests",
+    "section": "Why out-of-bag predictions matter",
+    "text": "Why out-of-bag predictions matter\nThey are almost as important as the random forest itself\n\nUnbiased assessment of external prediction accuracy.\nThe basis for computing permutation variable importance.\nA necessity for consistency of causal random forests.\n\nAs a bonus, assessing out-of-bag prediction accuracy is also much faster than cross-validation."
   }
 ]

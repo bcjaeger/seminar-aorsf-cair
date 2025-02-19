@@ -30,6 +30,7 @@ library(magick)
 library(ggforce)
 library(gt)
 library(table.glue)
+library(yardstick)
 
 thm  <- theme_bw() + 
   theme(
@@ -53,9 +54,15 @@ withr::with_dir(
 
 ## Bottom line up front
 
-1. Oblique random forests are good at prediction, and are likely the *best* tool for spectral data (defined later).
+1. Oblique random forests are good at prediction, and they are *excellent* tools for spectral data (defined later).
 
 1. `aorsf` provides a unified, simple, and fast interface for oblique random forests.
+
+## Slides
+
+Available online: 
+
+- [https://bcjaeger.github.io/seminar-aorsf-cair](https://bcjaeger.github.io/seminar-aorsf-cair)
 
 ## Overview
 
@@ -65,11 +72,13 @@ withr::with_dir(
     
     + Decision trees and random forests
 
-- `aorsf`
+- Oblique random forests
 
-    + Why? (statement of need)
+    + What is oblique?
+
+    + `aorsf` statement of need
     
-    + How? (use cases)
+    + `aorsf` demo
 
 # Supervised learning
 
@@ -315,7 +324,7 @@ This technique allows you to objectively compare *learners*
 
 - Repeat with different held out data
 
-- Evaluate average prediction accuracy for each learner
+- Compare average prediction accuracy by learner
 
 :::
 
@@ -660,23 +669,23 @@ The same splits, visualized as a tree
 
 ---
 
-## Decision trees: pros and cons
+## Decision trees
 
-Pros
+- Pros
 
-- Simple and intuitive visualization.
+    + Simple and intuitive visualization.
+    
+    + Captures conditional relationships.
 
-- Captures conditional relationships.
+- Cons
 
-Cons
-
-- Difficulty with linear relationships.
-
-- Overfits when trees grow too deep.
+    + Difficulty with linear relationships.
+    
+    + Overfits when trees grow too deep.
 
 ## Random forests
 
-Defn: a committee of de-correlated decision trees
+Defn: an ensemble of de-correlated decision trees
 
 :::{.incremental}
 
@@ -687,9 +696,10 @@ Defn: a committee of de-correlated decision trees
 - Why? Consider this example
 
   ```{r weak-vs-expert, echo=TRUE}
-  # suppose we ask 5000 weak learners a yes/no question
-  # individually, weak learners are right 51% of the time, but
-  # the probability that majority of weak learners are right is:
+  # suppose we ask 5000 independent weak learners a yes/no question.
+  # Individually, weak learners are right 51% of the time. However,
+  # the probability that a majority of weak learners are right is 92%.
+  # proof:
   1 - pbinom(q = 2500, size = 5000, prob = 0.51)
   ```
 
@@ -697,7 +707,7 @@ Defn: a committee of de-correlated decision trees
 
 ## Random forests
 
-Defn: a committee of de-correlated decision trees
+Defn: an ensemble of de-correlated decision trees
 
 - Each tree on its own is fairly weak at prediction.
 
@@ -709,15 +719,202 @@ Defn: a committee of de-correlated decision trees
     
     + Random subset of predictors considered for each split.
 
+---
 
-# Why `aorsf`?
+Predictions from a single randomized tree
 
-# Using `aorsf`
+```{r}
+fig_penguins$axis_3a
+```
+
+---
+
+Predictions from ensemble of 5 randomized trees
+
+```{r}
+fig_penguins$axis_3b
+```
+
+---
+
+Predictions from ensemble of 100 randomized trees
+
+```{r}
+fig_penguins$axis_3c
+```
+
+---
+
+Predictions from ensemble of 500 randomized trees
+
+```{r}
+fig_penguins$axis_3d
+```
+
+# Oblique random forests
+
+## What is oblique?
+
+![](img/axis_versus_oblique.png){fig-align="center"}
+
+---
+
+Predictions from a single oblique tree
+
+```{r}
+fig_penguins$oblique_2
+```
+
+---
+
+Predictions from an oblique random forest
+
+```{r}
+fig_penguins$oblique_3
+```
+
+## Are oblique splits helpful?
+
+For **prediction**, the answer is **usually yes**.
+
+- Leo Breiman, author of the random forest, noted this:
+
+![](img/axis_versus_oblique_leo.png){fig-align="center"}
+
+- This result has been replicated in multiple studies:
+
+    + [Menze et al](https://link.springer.com/chapter/10.1007/978-3-642-23783-6_29), [Katuwal et al](https://www.sciencedirect.com/science/article/abs/pii/S0031320319303796), [Tomita et al](https://jmlr.org/papers/v21/18-664.html), and [Jaeger et al](https://pmc.ncbi.nlm.nih.gov/articles/PMC11343578/)
+
+- Evidence on [consistency](https://arxiv.org/html/2211.12653v4#S6) of oblique trees is emerging.
+
+## Are oblique splits helpful?
+
+```{r}
+library(ranger)
+library(ODRF)
+library(microbenchmark)
+library(aorsf)
+library(randomForestSRC)
+```
 
 
-## Spectral data
+For **computational efficiency**, the answer is **no**.
 
-- Large number of continuous, correlated predictors.
+```{r, warning=FALSE, echo=TRUE}
+
+data_bench <- as.data.frame(
+ mutate(drop_na(penguins), species=factor(species))
+)
+
+bench <- microbenchmark(
+ axis_ranger = ranger(formula = species ~ bill_length_mm + flipper_length_mm, 
+                      data = data_bench),
+ axis_rfsrc = rfsrc(formula = species ~ bill_length_mm + flipper_length_mm,
+                    data = data_bench),
+ oblique_aorsf = orsf(formula = species ~ bill_length_mm + flipper_length_mm, 
+                      data = data_bench),
+ oblique_odrf = ODRF(formula = species ~ bill_length_mm + flipper_length_mm, 
+                     data = data_bench),
+ times = 10
+)
+
+```
+
+## Are oblique splits helpful?
+
+
+For **computational efficiency**, the answer is **no**.
+
+```{r, warning=FALSE, echo=TRUE}
+
+print(bench, signif=3, unit='relative')
+
+```
+
+---
+
+```{r}
+
+library(table.glue)
+
+dl <- map(
+ .x = purrr::set_names(c("ranger", "randomForestSRC", "ODRF", "aorsf")),
+ .f = ~ table_value(
+  sum(cranlogs::cran_downloads(.x, 
+                               from = today() - 30,
+                               to = today())$count)
+ )
+)
+
+
+```
+
+:::{.columns}
+::: {.column width="60%"}
+
+<h2 style="font-size: 60px;">
+    Computational efficiency is important
+</h2>
+
+30-day downloads from CRAN:
+
+- axis-based packages:
+
+    + `ranger`: `r dl$ranger`
+
+    + `randomForestSRC`: `r dl$randomForestSRC`
+
+- oblique packages:
+
+    + `aorsf`: `r dl$aorsf`
+
+    + `ODRF`: `r dl$ODRF`
+
+
+:::
+
+::: {.column width="40%"}
+![](img/meme_slow_R.jpg){fig-align="right"}
+:::
+:::
+
+
+
+# `aorsf`
+
+---
+
+## Statement of need
+
+:::{.incremental}
+
+- Oblique random forests are under-utilized, with high computational cost. Existing software focus on specific implementations, limiting scope.
+
+- `aorsf` is unifying oblique random forest software.
+
+    + Fast C++ backend based on `ranger`.
+    + Supports survival, regression, and classification.
+    + Supports custom functions for oblique splitting.
+    + Part of `tidymodels` and `mlr3`.
+    + Fast variable importance and partial dependence.
+
+:::
+
+## "a" stands for "accelerated"
+
+Our approach for linear combinations of predictors:
+
+- Fit a regression model to data in the current tree node
+
+    + Note: logistic and Cox models iterate until converging
+
+- Instead of iterating until convergence, stop after one.
+
+- Use the beta coefficients from the model as coefficients for the linear combination of predictors.
+
+## Demo with spectral data
+
+Spectral data include continuous, correlated predictors.
 
 - Example: `modeldata::meats`
 
@@ -725,15 +922,205 @@ Defn: a committee of de-correlated decision trees
 
 library(modeldata)
 
-dplyr::transmute(meats, protein, x_001, x_002, x_003, x_004, x_005,
-                 x_006, x_007, x_008,
-                 `...` = paste("..."), x_100) 
+dplyr::transmute(meats, protein, x_001, x_002,
+                 `...` = paste("..."), x_100) %>% 
+ slice(1:4) %>% 
+ knitr::kable()
 
 ```
 
-## Spectral data
+## Demo with spectral data
 
-- Large number of continuous, correlated predictors.
+- *Description*: Data are recorded on a Tecator Infratec Food and Feed Analyzer working in the wavelength range 850 - 1050 nm by the Near Infrared Transmission principle. Each sample contains finely chopped pure meat with different moisture, fat and protein contents
+
+- *Details*: For each meat sample the data consists of a 100 channel spectrum of absorbances and the contents of moisture (water), fat and protein. The absorbance is -log10 of the transmittance measured by the spectrometer. The three contents, measured in percent, are determined by analytic chemistry
+
+---
+
+## Demo with spectral data
+
+:::{.columns}
+::: {.column width="50%"}
+
+Make train & test sets:
+
+```{r echo=TRUE}
+
+trn_rows <- 
+ sample(nrow(meats), 100)
+
+meats_train <- meats[trn_rows, ]
+
+meats_test <- meats[-trn_rows, ]
+
+```
+
+:::
+
+::: {.column width="50%"}
+
+Train axis & oblique forests:
+
+```{r echo=TRUE}
+
+fit_aorsf <- 
+ orsf(protein ~ ., 
+      data = meats_train)
+fit_ranger <- 
+ ranger(protein ~.,
+        data = meats_train)
+```
+
+:::
+
+:::
+
+Evaluate $R^2$ of predictions (higher is better):
+
+```{r echo=TRUE}
+
+prd_aorsf <- predict(fit_aorsf, new_data = meats_test, pred_simplify = T)
+prd_ranger <- predict(fit_ranger, data = meats_test)$predictions
+
+rsq_vec(estimate = prd_aorsf, truth = meats_test$protein)
+rsq_vec(estimate = prd_ranger, truth = meats_test$protein)
+
+```
+
+## Demo with spectral data
+
+
+`aorsf` supports variable importance
+
+```{r echo=TRUE}
+
+orsf_vi(fit_aorsf)[1:3]
+
+```
+
+And multivariable-adjusted summaries for each predictor:
+
+```{r echo=TRUE}
+
+orsf_summarize_uni(fit_aorsf, n_variables = 1)
+
+```
+
+## Demo with spectral data
+
+`aorsf` can also look for pairwise interactions (details [here](https://arxiv.org/abs/1805.04755))
+
+```{r echo=TRUE}
+
+top_preds <- names(orsf_vi(fit_aorsf)[1:10])
+
+# warning: this can get very computationally expensive.
+# use subsets of <= 10 predictors to keep it efficient.
+vint <- orsf_vint(fit_aorsf, predictors = top_preds)
+
+vint[1:10, ]
+```
+
+## Demo with spectral data
+
+and sometimes it finds them.
+
+```{r echo=FALSE, fig.width=13}
+
+library(data.table)
+library(patchwork)
+
+pd <- fit_aorsf %>% 
+ orsf_pd_oob(
+  pred_spec_auto(x_029, x_014)
+ ) %>% 
+ group_by(x_014) %>% 
+ mutate(mean = mean - mean[1])
+
+p1 <- ggplot(pd) +
+ aes(x = x_029, 
+     y = mean, 
+     color = x_014,
+     group = x_014) +
+ geom_line() + 
+ labs(y = "Expected change in prediction")
+
+pd = fit_aorsf %>% 
+    orsf_pd_oob(
+        pred_spec_auto(x_030, x_035)
+    ) %>% 
+    group_by(x_035) %>% 
+    mutate(mean = mean - mean[1])
+
+p2 <- ggplot(pd) +
+    aes(x = x_030, 
+        y = mean, 
+        color = x_035,
+        group = x_035) +
+    geom_line() + 
+    labs(y = "Expected change in prediction")
+
+p1 + p2
+
+```
+
+## Demo with spectral data
+
+Sanity check the result using regression
+
+::: {.columns}
+::: {.column width="55%"}
+
+```{r, eval=FALSE, echo=TRUE}
+
+anova(
+ lm(
+  protein ~ bs(x_029)*bs(x_014), 
+  data = meats_train
+ )
+)
+
+anova(
+ lm(
+  protein ~ bs(x_030)*bs(x_035),
+  data = meats_train
+ )
+)
+
+```
+
+:::
+
+::: {.column width="45%"}
+
+```{r}
+
+library(splines)
+
+anova(
+ lm(protein ~ bs(x_029) * bs(x_014), 
+    data = meats_train)
+) %>% 
+ broom::tidy() %>% 
+ select(term, p.value) %>% 
+ mutate(p.value = table_pvalue(p.value))
+
+anova(
+ lm(protein ~ bs(x_030) * bs(x_035),
+    data = meats_train)
+) %>%
+ broom::tidy() %>%
+ select(term, p.value) %>%
+ mutate(p.value = table_pvalue(p.value))
+
+```
+
+:::
+:::
+
+## More spectral data
+
+- Here is a much larger spectral data example
 
 - Example: `modeldatatoo::data_chimiometrie_2019()`
 
@@ -747,7 +1134,98 @@ dplyr::transmute(chim, soy_oil, wvlgth_001, wvlgth_002,
 
 ```
 
+## More spectral data
+
+- *Description*: This data set was published as the challenge at the Chimiometrie 2019 conference held in Montpellier and is available at the conference homepage. The data consist of 6915 training spectra and 600 test spectra measured at 550 (unknown) wavelengths. The target was the amount of soy oil (0-5.5%), ucerne (0-40%) and barley (0-52%) in a mixture
+
+## Bigger benchmark
+
+Now we'll fit 6 learners in addition to `aorsf` and use nested cross-validation to tune each approach, including:
+
+- consider 16 data pre-processing approaches (details [here](https://github.com/bcjaeger/tidymodel-bench/blob/9bedfb9c51f4d6e3615fa89ac0decacae21a0038/run_nested_cv.R#L133))
+
+    + includes option for each learner to use a variable selection step and data transformation (i.e., principal component analysis)
+
+- implement tuning for each learner (details [here](https://github.com/bcjaeger/tidymodel-bench/blob/9bedfb9c51f4d6e3615fa89ac0decacae21a0038/R/initialize.R#L127))
+
+All code available [here](https://github.com/bcjaeger/tidymodel-bench/)
+
+---
+
+Even with fully developed tuning pipelines, it is difficult to beat oblique random forests in spectral data.
+
+```{r}
+
+bm <- readr::read_rds('data/bm_pred_cart.rds') %>% 
+ getElement('regression') %>% 
+ filter(data_id == 'data_chimiometrie_2019') %>% 
+ group_by(model_id) %>% 
+ summarize(value = mean(rsq_trad),
+           sd = sd(rsq_trad),
+           label = table_glue("{value * 100}%"))
+
+ggplot(bm) +
+ aes(x = reorder(model_id, value),
+     fill = model_id,
+     y = value, label = label) + 
+ geom_col(show.legend = FALSE) +
+ geom_text(vjust = -1/2, size = 10) +
+ labs(y = "Mean R-squared in testing data", x = "") + 
+ scale_y_continuous(limits = c(0,1))
+
+```
 
 
+## Conclusion
 
+1. Oblique random forests are good at prediction, and they are *excellent* tools for spectral data.
+
+1. `aorsf` provides a unified, simple, and fast interface for oblique random forests.
+
+1. Learn more [here](https://docs.ropensci.org/aorsf/)
+
+# Thank you!
+
+# Bonus round
+
+---
+
+Subsetting data by tree allows for out-of-bag prediction.
+
+![](img/trees-oobag-1.svg){width=100%}
+---
+
+About 2/3 of the data are in-bag for each tree.
+
+![](img/trees-oobag-2.svg){width=100%}
+
+---
+
+The out-of-bag remainder is external to the tree.
+
+![](img/trees-oobag-3.svg){width=100%}
+
+---
+
+Each observation's denominator is tracked
+
+![](img/trees-oobag-4.svg){width=100%}
+
+---
+
+Repeat until all trees are grown.
+
+![](img/trees-oobag-5.svg){width=100%}
+
+## Why out-of-bag predictions matter
+
+They are almost as important as the random forest itself
+
+1. Unbiased assessment of external prediction accuracy.
+
+2. The basis for computing permutation variable importance.
+
+3. A necessity for consistency of causal random forests.
+
+As a bonus, assessing out-of-bag prediction accuracy is also much faster than cross-validation.
 

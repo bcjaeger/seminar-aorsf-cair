@@ -80,8 +80,8 @@ viz_penguins <- function() {
                    data = penguins)
 
  grid <- expand_grid(
-  flipper_length_mm = seq(170, 235, len = 50),
-  bill_length_mm = seq(30, 70, len = 50)
+  flipper_length_mm = seq(170, 235, len = 150),
+  bill_length_mm = seq(30, 70, len = 150)
  )
 
  pred_1 <- predict(axis_1, newdata = grid, type = 'prob')

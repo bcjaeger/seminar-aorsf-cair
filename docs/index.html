@@ -413,9 +413,16 @@ Byron C Jaeger
 <section id="bottom-line-up-front" class="slide level2">
 <h2>Bottom line up front</h2>
 <ol type="1">
-<li><p>Oblique random forests are good at prediction, and are likely the <em>best</em> tool for spectral data (defined later).</p></li>
+<li><p>Oblique random forests are good at prediction, and they are <em>excellent</em> tools for spectral data (defined later).</p></li>
 <li><p><code>aorsf</code> provides a unified, simple, and fast interface for oblique random forests.</p></li>
 </ol>
+</section>
+<section id="slides" class="slide level2">
+<h2>Slides</h2>
+<p>Available online:</p>
+<ul>
+<li><a href="https://bcjaeger.github.io/seminar-aorsf-cair">https://bcjaeger.github.io/seminar-aorsf-cair</a></li>
+</ul>
 </section>
 <section id="overview" class="slide level2">
 <h2>Overview</h2>
@@ -425,10 +432,11 @@ Byron C Jaeger
 <li><p>Supervised learning</p></li>
 <li><p>Decision trees and random forests</p></li>
 </ul></li>
-<li><p><code>aorsf</code></p>
+<li><p>Oblique random forests</p>
 <ul>
-<li><p>Why? (statement of need)</p></li>
-<li><p>How? (use cases)</p></li>
+<li><p>What is oblique?</p></li>
+<li><p><code>aorsf</code> statement of need</p></li>
+<li><p><code>aorsf</code> demo</p></li>
 </ul></li>
 </ul>
 </section>
@@ -526,7 +534,7 @@ Byron C Jaeger
 <li class="fragment"><p>Predict the outcome using each model (one per learner)</p></li>
 <li class="fragment"><p>Evaluate prediction accuracy</p></li>
 <li class="fragment"><p>Repeat with different held out data</p></li>
-<li class="fragment"><p>Evaluate average prediction accuracy for each learner</p></li>
+<li class="fragment"><p>Compare average prediction accuracy by learner</p></li>
 </ul>
 </div>
 </section>
@@ -1086,32 +1094,35 @@ Byron C Jaeger
 <p>The same splits, visualized as a tree</p>
 
 <img data-src="img/rpart_plot_classif.png" class="quarto-figure quarto-figure-center r-stretch"></section>
-<section id="decision-trees-pros-and-cons" class="slide level2">
-<h2>Decision trees: pros and cons</h2>
-<p>Pros</p>
+<section id="decision-trees" class="slide level2">
+<h2>Decision trees</h2>
+<ul>
+<li><p>Pros</p>
 <ul>
 <li><p>Simple and intuitive visualization.</p></li>
 <li><p>Captures conditional relationships.</p></li>
-</ul>
-<p>Cons</p>
+</ul></li>
+<li><p>Cons</p>
 <ul>
 <li><p>Difficulty with linear relationships.</p></li>
 <li><p>Overfits when trees grow too deep.</p></li>
+</ul></li>
 </ul>
 </section>
 <section id="random-forests" class="slide level2">
 <h2>Random forests</h2>
-<p>Defn: a committee of de-correlated decision trees</p>
+<p>Defn: an ensemble of de-correlated decision trees</p>
 <div>
 <ul>
 <li class="fragment"><p>Each tree on its own is fairly weak at prediction.</p></li>
 <li class="fragment"><p>However, the aggregate prediction is usually very good.</p></li>
 <li class="fragment"><p>Why? Consider this example</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a><span class="co"># suppose we ask 5000 weak learners a yes/no question</span></span>
-<span id="cb1-2"><a></a><span class="co"># individually, weak learners are right 51% of the time, but</span></span>
-<span id="cb1-3"><a></a><span class="co"># the probability that majority of weak learners are right is:</span></span>
-<span id="cb1-4"><a></a><span class="dv">1</span> <span class="sc">-</span> <span class="fu">pbinom</span>(<span class="at">q =</span> <span class="dv">2500</span>, <span class="at">size =</span> <span class="dv">5000</span>, <span class="at">prob =</span> <span class="fl">0.51</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a></a><span class="co"># suppose we ask 5000 independent weak learners a yes/no question.</span></span>
+<span id="cb1-2"><a></a><span class="co"># Individually, weak learners are right 51% of the time. However,</span></span>
+<span id="cb1-3"><a></a><span class="co"># the probability that a majority of weak learners are right is 92%.</span></span>
+<span id="cb1-4"><a></a><span class="co"># proof:</span></span>
+<span id="cb1-5"><a></a><span class="dv">1</span> <span class="sc">-</span> <span class="fu">pbinom</span>(<span class="at">q =</span> <span class="dv">2500</span>, <span class="at">size =</span> <span class="dv">5000</span>, <span class="at">prob =</span> <span class="fl">0.51</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.9192858</code></pre>
 </div>
@@ -1121,56 +1132,375 @@ Byron C Jaeger
 </section>
 <section id="random-forests-1" class="slide level2">
 <h2>Random forests</h2>
-<p>Defn: a committee of de-correlated decision trees</p>
+<p>Defn: an ensemble of de-correlated decision trees</p>
 <ul>
 <li><p>Each tree on its own is fairly weak at prediction.</p></li>
 <li><p>However, the aggregate prediction is usually very good.</p></li>
 <li><p>How are they de-correlated?</p>
 <ul>
-<li><p>Random subsets of (bootstrapped) data for each tree</p></li>
-<li><p>Random subset of predictors considered for each split</p></li>
+<li><p>Random subset of (bootstrapped) data for each tree.</p></li>
+<li><p>Random subset of predictors considered for each split.</p></li>
 </ul></li>
 </ul>
-</section></section>
-<section id="why-aorsf" class="title-slide slide level1 center">
-<h1>Why <code>aorsf</code>?</h1>
-
 </section>
+<section class="slide level2">
 
+<p>Predictions from a single randomized tree</p>
+
+<img data-src="index_files/figure-revealjs/unnamed-chunk-31-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:100.0%"></section>
+<section class="slide level2">
+
+<p>Predictions from ensemble of 5 randomized trees</p>
+
+<img data-src="index_files/figure-revealjs/unnamed-chunk-32-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:100.0%"></section>
+<section class="slide level2">
+
+<p>Predictions from ensemble of 100 randomized trees</p>
+
+<img data-src="index_files/figure-revealjs/unnamed-chunk-33-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:100.0%"></section>
+<section class="slide level2">
+
+<p>Predictions from ensemble of 500 randomized trees</p>
+
+<img data-src="index_files/figure-revealjs/unnamed-chunk-34-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:100.0%"></section></section>
 <section>
-<section id="using-aorsf" class="title-slide slide level1 center">
-<h1>Using <code>aorsf</code></h1>
+<section id="oblique-random-forests" class="title-slide slide level1 center">
+<h1>Oblique random forests</h1>
 
 </section>
-<section id="spectral-data" class="slide level2">
-<h2>Spectral data</h2>
+<section id="what-is-oblique" class="slide level2">
+<h2>What is oblique?</h2>
+
+<img data-src="img/axis_versus_oblique.png" class="quarto-figure quarto-figure-center r-stretch"></section>
+<section class="slide level2">
+
+<p>Predictions from a single oblique tree</p>
+
+<img data-src="index_files/figure-revealjs/unnamed-chunk-35-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:100.0%"></section>
+<section class="slide level2">
+
+<p>Predictions from an oblique random forest</p>
+
+<img data-src="index_files/figure-revealjs/unnamed-chunk-36-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:100.0%"></section>
+<section id="are-oblique-splits-helpful" class="slide level2">
+<h2>Are oblique splits helpful?</h2>
+<p>For <strong>prediction</strong>, the answer is <strong>usually yes</strong>.</p>
 <ul>
-<li><p>Large number of continuous, correlated predictors.</p></li>
-<li><p>Example: <code>modeldata::meats</code></p></li>
+<li>Leo Breiman, author of the random forest, noted this:</li>
+</ul>
+
+<img data-src="img/axis_versus_oblique_leo.png" class="quarto-figure quarto-figure-center r-stretch"><ul>
+<li><p>This result has been replicated in multiple studies:</p>
+<ul>
+<li><a href="https://link.springer.com/chapter/10.1007/978-3-642-23783-6_29">Menze et al</a>, <a href="https://www.sciencedirect.com/science/article/abs/pii/S0031320319303796">Katuwal et al</a>, <a href="https://jmlr.org/papers/v21/18-664.html">Tomita et al</a>, and <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11343578/">Jaeger et al</a></li>
+</ul></li>
+<li><p>Evidence on <a href="https://arxiv.org/html/2211.12653v4#S6">consistency</a> of oblique trees is emerging.</p></li>
+</ul>
+</section>
+<section id="are-oblique-splits-helpful-1" class="slide level2">
+<h2>Are oblique splits helpful?</h2>
+<p>For <strong>computational efficiency</strong>, the answer is <strong>no</strong>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a></a>data_bench <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(</span>
+<span id="cb3-2"><a></a> <span class="fu">mutate</span>(<span class="fu">drop_na</span>(penguins), <span class="at">species=</span><span class="fu">factor</span>(species))</span>
+<span id="cb3-3"><a></a>)</span>
+<span id="cb3-4"><a></a></span>
+<span id="cb3-5"><a></a>bench <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(</span>
+<span id="cb3-6"><a></a> <span class="at">axis_ranger =</span> <span class="fu">ranger</span>(<span class="at">formula =</span> species <span class="sc">~</span> bill_length_mm <span class="sc">+</span> flipper_length_mm, </span>
+<span id="cb3-7"><a></a>                      <span class="at">data =</span> data_bench),</span>
+<span id="cb3-8"><a></a> <span class="at">axis_rfsrc =</span> <span class="fu">rfsrc</span>(<span class="at">formula =</span> species <span class="sc">~</span> bill_length_mm <span class="sc">+</span> flipper_length_mm,</span>
+<span id="cb3-9"><a></a>                    <span class="at">data =</span> data_bench),</span>
+<span id="cb3-10"><a></a> <span class="at">oblique_aorsf =</span> <span class="fu">orsf</span>(<span class="at">formula =</span> species <span class="sc">~</span> bill_length_mm <span class="sc">+</span> flipper_length_mm, </span>
+<span id="cb3-11"><a></a>                      <span class="at">data =</span> data_bench),</span>
+<span id="cb3-12"><a></a> <span class="at">oblique_odrf =</span> <span class="fu">ODRF</span>(<span class="at">formula =</span> species <span class="sc">~</span> bill_length_mm <span class="sc">+</span> flipper_length_mm, </span>
+<span id="cb3-13"><a></a>                     <span class="at">data =</span> data_bench),</span>
+<span id="cb3-14"><a></a> <span class="at">times =</span> <span class="dv">10</span></span>
+<span id="cb3-15"><a></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="are-oblique-splits-helpful-2" class="slide level2">
+<h2>Are oblique splits helpful?</h2>
+<p>For <strong>computational efficiency</strong>, the answer is <strong>no</strong>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a></a><span class="fu">print</span>(bench, <span class="at">signif=</span><span class="dv">3</span>, <span class="at">unit=</span><span class="st">'relative'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: relative
+          expr    min     lq   mean median      uq    max neval cld
+   axis_ranger   1.00   1.00   1.00   1.00   1.000   1.00    10  a 
+    axis_rfsrc   1.78   1.77   1.22   1.75   0.732   1.08    10  a 
+ oblique_aorsf   1.57   1.96   1.43   1.93   0.920   1.39    10  a 
+  oblique_odrf 554.00 530.00 291.00 463.00 174.000 134.00    10   b</code></pre>
+</div>
+</div>
+</section>
+<section class="slide level2">
+
+<div class="columns">
+<div class="column" style="width:60%;">
+<h2 style="font-size: 60px;">
+Computational efficiency is important
+</h2>
+<p>30-day downloads from CRAN:</p>
+<ul>
+<li><p>axis-based packages:</p>
+<ul>
+<li><p><code>ranger</code>: 42,012</p></li>
+<li><p><code>randomForestSRC</code>: 5,388</p></li>
+</ul></li>
+<li><p>oblique packages:</p>
+<ul>
+<li><p><code>aorsf</code>: 1,470</p></li>
+<li><p><code>ODRF</code>: 264</p></li>
+</ul></li>
+</ul>
+</div><div class="column" style="width:40%;">
+<div class="quarto-figure quarto-figure-right">
+<figure>
+<p><img data-src="img/meme_slow_R.jpg" class="quarto-figure quarto-figure-right"></p>
+</figure>
+</div>
+</div></div>
+</section></section>
+<section>
+<section id="aorsf" class="title-slide slide level1 center">
+<h1><code>aorsf</code></h1>
+
+</section>
+<section id="statement-of-need" class="slide level2">
+<h2>Statement of need</h2>
+<div>
+<ul>
+<li class="fragment"><p>Oblique random forests are under-utilized, with high computational cost. Existing software focus on specific implementations, limiting scope.</p></li>
+<li class="fragment"><p><code>aorsf</code> is unifying oblique random forest software.</p>
+<ul>
+<li class="fragment">Fast C++ backend based on <code>ranger</code>.</li>
+<li class="fragment">Supports survival, regression, and classification.</li>
+<li class="fragment">Supports custom functions for oblique splitting.</li>
+<li class="fragment">Part of <code>tidymodels</code> and <code>mlr3</code>.</li>
+<li class="fragment">Fast variable importance and partial dependence.</li>
+</ul></li>
+</ul>
+</div>
+</section>
+<section id="a-stands-for-accelerated" class="slide level2">
+<h2>“a” stands for “accelerated”</h2>
+<p>Our approach for linear combinations of predictors:</p>
+<ul>
+<li><p>Fit a regression model to data in the current tree node</p>
+<ul>
+<li>Note: logistic and Cox models iterate until converging</li>
+</ul></li>
+<li><p>Instead of iterating until convergence, stop after one.</p></li>
+<li><p>Use the beta coefficients from the model as coefficients for the linear combination of predictors.</p></li>
+</ul>
+</section>
+<section id="demo-with-spectral-data" class="slide level2">
+<h2>Demo with spectral data</h2>
+<p>Spectral data include continuous, correlated predictors.</p>
+<ul>
+<li>Example: <code>modeldata::meats</code></li>
 </ul>
 <div class="cell" data-layout-align="center">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 215 × 11
-   protein x_001 x_002 x_003 x_004 x_005 x_006 x_007 x_008 ...   x_100
-     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt;
- 1    16.7  2.62  2.62  2.62  2.62  2.62  2.62  2.62  2.62 ...    2.82
- 2    13.5  2.83  2.84  2.84  2.85  2.85  2.86  2.86  2.87 ...    3.18
- 3    20.5  2.58  2.58  2.59  2.59  2.59  2.59  2.59  2.60 ...    2.55
- 4    20.7  2.82  2.82  2.83  2.83  2.83  2.83  2.83  2.84 ...    2.80
- 5    15.5  2.79  2.79  2.79  2.79  2.80  2.80  2.80  2.80 ...    3.14
- 6    13.7  3.01  3.02  3.02  3.03  3.03  3.04  3.04  3.05 ...    3.45
- 7    13.7  2.99  2.99  3.00  3.01  3.01  3.02  3.02  3.03 ...    3.38
- 8    19.3  2.53  2.53  2.53  2.53  2.53  2.53  2.53  2.53 ...    2.71
- 9    17.7  3.27  3.28  3.29  3.29  3.30  3.31  3.31  3.32 ...    3.65
-10    17.7  3.40  3.41  3.41  3.42  3.43  3.43  3.44  3.45 ...    3.77
-# ℹ 205 more rows</code></pre>
+<div class="cell-output-display">
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: right;">protein</th>
+<th style="text-align: right;">x_001</th>
+<th style="text-align: right;">x_002</th>
+<th style="text-align: left;">…</th>
+<th style="text-align: right;">x_100</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">16.7</td>
+<td style="text-align: right;">2.61776</td>
+<td style="text-align: right;">2.61814</td>
+<td style="text-align: left;">…</td>
+<td style="text-align: right;">2.81920</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">13.5</td>
+<td style="text-align: right;">2.83454</td>
+<td style="text-align: right;">2.83871</td>
+<td style="text-align: left;">…</td>
+<td style="text-align: right;">3.17942</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">20.5</td>
+<td style="text-align: right;">2.58284</td>
+<td style="text-align: right;">2.58458</td>
+<td style="text-align: left;">…</td>
+<td style="text-align: right;">2.54816</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">20.7</td>
+<td style="text-align: right;">2.82286</td>
+<td style="text-align: right;">2.82460</td>
+<td style="text-align: left;">…</td>
+<td style="text-align: right;">2.79622</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </section>
-<section id="spectral-data-1" class="slide level2">
-<h2>Spectral data</h2>
+<section id="demo-with-spectral-data-1" class="slide level2">
+<h2>Demo with spectral data</h2>
 <ul>
-<li><p>Large number of continuous, correlated predictors.</p></li>
+<li><p><em>Description</em>: Data are recorded on a Tecator Infratec Food and Feed Analyzer working in the wavelength range 850 - 1050 nm by the Near Infrared Transmission principle. Each sample contains finely chopped pure meat with different moisture, fat and protein contents</p></li>
+<li><p><em>Details</em>: For each meat sample the data consists of a 100 channel spectrum of absorbances and the contents of moisture (water), fat and protein. The absorbance is -log10 of the transmittance measured by the spectrometer. The three contents, measured in percent, are determined by analytic chemistry</p></li>
+</ul>
+</section>
+<section id="demo-with-spectral-data-2" class="slide level2">
+<h2>Demo with spectral data</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p>Make train &amp; test sets:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>trn_rows <span class="ot">&lt;-</span> </span>
+<span id="cb6-2"><a></a> <span class="fu">sample</span>(<span class="fu">nrow</span>(meats), <span class="dv">100</span>)</span>
+<span id="cb6-3"><a></a></span>
+<span id="cb6-4"><a></a>meats_train <span class="ot">&lt;-</span> meats[trn_rows, ]</span>
+<span id="cb6-5"><a></a></span>
+<span id="cb6-6"><a></a>meats_test <span class="ot">&lt;-</span> meats[<span class="sc">-</span>trn_rows, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div><div class="column" style="width:50%;">
+<p>Train axis &amp; oblique forests:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a>fit_aorsf <span class="ot">&lt;-</span> </span>
+<span id="cb7-2"><a></a> <span class="fu">orsf</span>(protein <span class="sc">~</span> ., </span>
+<span id="cb7-3"><a></a>      <span class="at">data =</span> meats_train)</span>
+<span id="cb7-4"><a></a>fit_ranger <span class="ot">&lt;-</span> </span>
+<span id="cb7-5"><a></a> <span class="fu">ranger</span>(protein <span class="sc">~</span>.,</span>
+<span id="cb7-6"><a></a>        <span class="at">data =</span> meats_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div></div>
+<p>Evaluate <span class="math inline">\(R^2\)</span> of predictions (higher is better):</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a></a>prd_aorsf <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit_aorsf, <span class="at">new_data =</span> meats_test, <span class="at">pred_simplify =</span> T)</span>
+<span id="cb8-2"><a></a>prd_ranger <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit_ranger, <span class="at">data =</span> meats_test)<span class="sc">$</span>predictions</span>
+<span id="cb8-3"><a></a></span>
+<span id="cb8-4"><a></a><span class="fu">rsq_vec</span>(<span class="at">estimate =</span> prd_aorsf, <span class="at">truth =</span> meats_test<span class="sc">$</span>protein)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.9356059</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a></a><span class="fu">rsq_vec</span>(<span class="at">estimate =</span> prd_ranger, <span class="at">truth =</span> meats_test<span class="sc">$</span>protein)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.6872002</code></pre>
+</div>
+</div>
+</section>
+<section id="demo-with-spectral-data-3" class="slide level2">
+<h2>Demo with spectral data</h2>
+<p><code>aorsf</code> supports variable importance</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a></a><span class="fu">orsf_vi</span>(fit_aorsf)[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      fat     x_029     x_028 
+0.2355890 0.2328767 0.2315789 </code></pre>
+</div>
+</div>
+<p>And multivariable-adjusted summaries for each predictor:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a></a><span class="fu">orsf_summarize_uni</span>(fit_aorsf, <span class="at">n_variables =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+-- fat (VI Rank: 1) ------------------------
+
+        |--------- Expected value ---------|
+  Value     Mean   Median   25th %   75th %
+ &lt;char&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;    &lt;num&gt;
+   5.90 18.29500 19.33016 16.37537 20.19645
+   7.28 18.27809 19.32573 16.36435 20.17653
+   15.7 18.12412 19.20343 16.31901 19.95582
+   29.2 17.88790 18.98651 15.98738 19.70517
+   37.9 17.75646 18.84186 15.91031 19.60750
+
+ Predicted expected value for top 1 predictors </code></pre>
+</div>
+</div>
+</section>
+<section id="demo-with-spectral-data-4" class="slide level2">
+<h2>Demo with spectral data</h2>
+<p><code>aorsf</code> can also look for pairwise interactions (details <a href="https://arxiv.org/abs/1805.04755">here</a>)</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a></a>top_preds <span class="ot">&lt;-</span> <span class="fu">names</span>(<span class="fu">orsf_vi</span>(fit_aorsf)[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>])</span>
+<span id="cb16-2"><a></a></span>
+<span id="cb16-3"><a></a><span class="co"># warning: this can get very computationally expensive.</span></span>
+<span id="cb16-4"><a></a><span class="co"># use subsets of &lt;= 10 predictors to keep it efficient.</span></span>
+<span id="cb16-5"><a></a>vint <span class="ot">&lt;-</span> <span class="fu">orsf_vint</span>(fit_aorsf, <span class="at">predictors =</span> top_preds)</span>
+<span id="cb16-6"><a></a></span>
+<span id="cb16-7"><a></a>vint[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     interaction       score          pd_values
+          &lt;char&gt;       &lt;num&gt;             &lt;list&gt;
+ 1: x_029..x_014 0.010221001 &lt;data.table[25x9]&gt;
+ 2: x_030..x_035 0.010012501 &lt;data.table[25x9]&gt;
+ 3: x_029..x_034 0.008032039 &lt;data.table[25x9]&gt;
+ 4: x_028..x_014 0.008020588 &lt;data.table[25x9]&gt;
+ 5: x_034..x_026 0.007513260 &lt;data.table[25x9]&gt;
+ 6: x_034..x_035 0.007083606 &lt;data.table[25x9]&gt;
+ 7: x_029..x_035 0.006955590 &lt;data.table[25x9]&gt;
+ 8: x_030..x_014 0.006674831 &lt;data.table[25x9]&gt;
+ 9: x_027..x_014 0.006570676 &lt;data.table[25x9]&gt;
+10: x_034..x_030 0.006246572 &lt;data.table[25x9]&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="demo-with-spectral-data-5" class="slide level2">
+<h2>Demo with spectral data</h2>
+<p>and sometimes it finds them.</p>
+
+<img data-src="index_files/figure-revealjs/unnamed-chunk-48-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:100.0%"></section>
+<section id="demo-with-spectral-data-6" class="slide level2">
+<h2>Demo with spectral data</h2>
+<p>Sanity check the result using regression</p>
+<div class="columns">
+<div class="column" style="width:55%;">
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a></a><span class="fu">anova</span>(</span>
+<span id="cb18-2"><a></a> <span class="fu">lm</span>(</span>
+<span id="cb18-3"><a></a>  protein <span class="sc">~</span> <span class="fu">bs</span>(x_029)<span class="sc">*</span><span class="fu">bs</span>(x_014), </span>
+<span id="cb18-4"><a></a>  <span class="at">data =</span> meats_train</span>
+<span id="cb18-5"><a></a> )</span>
+<span id="cb18-6"><a></a>)</span>
+<span id="cb18-7"><a></a></span>
+<span id="cb18-8"><a></a><span class="fu">anova</span>(</span>
+<span id="cb18-9"><a></a> <span class="fu">lm</span>(</span>
+<span id="cb18-10"><a></a>  protein <span class="sc">~</span> <span class="fu">bs</span>(x_030)<span class="sc">*</span><span class="fu">bs</span>(x_035),</span>
+<span id="cb18-11"><a></a>  <span class="at">data =</span> meats_train</span>
+<span id="cb18-12"><a></a> )</span>
+<span id="cb18-13"><a></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div><div class="column" style="width:45%;">
+<div class="cell" data-layout-align="center">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  term                p.value
+  &lt;chr&gt;               &lt;chr&gt;  
+1 bs(x_029)           &lt;.001  
+2 bs(x_014)           &lt;.001  
+3 bs(x_029):bs(x_014) &lt;.001  
+4 Residuals           --     </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  term                p.value
+  &lt;chr&gt;               &lt;chr&gt;  
+1 bs(x_030)           &lt;.001  
+2 bs(x_035)           &lt;.001  
+3 bs(x_030):bs(x_035) .20    
+4 Residuals           --     </code></pre>
+</div>
+</div>
+</div></div>
+</section>
+<section id="more-spectral-data" class="slide level2">
+<h2>More spectral data</h2>
+<ul>
+<li><p>Here is a much larger spectral data example</p></li>
 <li><p>Example: <code>modeldatatoo::data_chimiometrie_2019()</code></p></li>
 </ul>
 <div class="cell" data-layout-align="center">
@@ -1191,6 +1521,82 @@ Byron C Jaeger
 # ℹ 6,905 more rows</code></pre>
 </div>
 </div>
+</section>
+<section id="more-spectral-data-1" class="slide level2">
+<h2>More spectral data</h2>
+<ul>
+<li><em>Description</em>: This data set was published as the challenge at the Chimiometrie 2019 conference held in Montpellier and is available at the conference homepage. The data consist of 6915 training spectra and 600 test spectra measured at 550 (unknown) wavelengths. The target was the amount of soy oil (0-5.5%), ucerne (0-40%) and barley (0-52%) in a mixture</li>
+</ul>
+</section>
+<section id="bigger-benchmark" class="slide level2">
+<h2>Bigger benchmark</h2>
+<p>Now we’ll fit 6 learners in addition to <code>aorsf</code> and use nested cross-validation to tune each approach, including:</p>
+<ul>
+<li><p>consider 16 data pre-processing approaches (details <a href="https://github.com/bcjaeger/tidymodel-bench/blob/9bedfb9c51f4d6e3615fa89ac0decacae21a0038/run_nested_cv.R#L133">here</a>)</p>
+<ul>
+<li>includes option for each learner to use a variable selection step and data transformation (i.e., principal component analysis)</li>
+</ul></li>
+<li><p>implement tuning for each learner (details <a href="https://github.com/bcjaeger/tidymodel-bench/blob/9bedfb9c51f4d6e3615fa89ac0decacae21a0038/R/initialize.R#L127">here</a>)</p></li>
+</ul>
+<p>All code available <a href="https://github.com/bcjaeger/tidymodel-bench/">here</a></p>
+</section>
+<section class="slide level2">
+
+<p>Even with fully developed tuning pipelines, it is difficult to beat oblique random forests in spectral data.</p>
+
+<img data-src="index_files/figure-revealjs/unnamed-chunk-52-1.png" class="quarto-figure quarto-figure-center r-stretch" style="width:100.0%"></section>
+<section id="conclusion" class="slide level2">
+<h2>Conclusion</h2>
+<ol type="1">
+<li><p>Oblique random forests are good at prediction, and they are <em>excellent</em> tools for spectral data.</p></li>
+<li><p><code>aorsf</code> provides a unified, simple, and fast interface for oblique random forests.</p></li>
+<li><p>Learn more <a href="https://docs.ropensci.org/aorsf/">here</a></p></li>
+</ol>
+</section></section>
+<section id="thank-you" class="title-slide slide level1 center">
+<h1>Thank you!</h1>
+
+</section>
+
+<section>
+<section id="bonus-round" class="title-slide slide level1 center">
+<h1>Bonus round</h1>
+
+</section>
+<section class="slide level2">
+
+<p>Subsetting data by tree allows for out-of-bag prediction.</p>
+
+<img data-src="img/trees-oobag-1.svg" style="width:100.0%" class="r-stretch"></section>
+<section class="slide level2">
+
+<p>About 2/3 of the data are in-bag for each tree.</p>
+
+<img data-src="img/trees-oobag-2.svg" style="width:100.0%" class="r-stretch"></section>
+<section class="slide level2">
+
+<p>The out-of-bag remainder is external to the tree.</p>
+
+<img data-src="img/trees-oobag-3.svg" style="width:100.0%" class="r-stretch"></section>
+<section class="slide level2">
+
+<p>Each observation’s denominator is tracked</p>
+
+<img data-src="img/trees-oobag-4.svg" style="width:100.0%" class="r-stretch"></section>
+<section class="slide level2">
+
+<p>Repeat until all trees are grown.</p>
+
+<img data-src="img/trees-oobag-5.svg" style="width:100.0%" class="r-stretch"></section>
+<section id="why-out-of-bag-predictions-matter" class="slide level2">
+<h2>Why out-of-bag predictions matter</h2>
+<p>They are almost as important as the random forest itself</p>
+<ol type="1">
+<li><p>Unbiased assessment of external prediction accuracy.</p></li>
+<li><p>The basis for computing permutation variable importance.</p></li>
+<li><p>A necessity for consistency of causal random forests.</p></li>
+</ol>
+<p>As a bonus, assessing out-of-bag prediction accuracy is also much faster than cross-validation.</p>
 
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
