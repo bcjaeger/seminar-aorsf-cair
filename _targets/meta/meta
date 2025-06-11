@@ -1,9 +1,9 @@
 name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
-.Random.seed|object|556253f99cfb0c8d|||||||||||||||
-fig_penguins|stem|2dff698d620eaf46|cd619b5c3939e650|b071534582f06684|-599837288||t20136.8097646913s|1eecc471fb841a13|10019769|rds|local|vector|||15.422||
-fig_surv_bm|stem|0c01fde82d4b6790|6075f88f38ab7ae4|e86f91305d755c69|1853368272||t20132.8825828767s|decfda6ddcd561c0|934462|rds|local|vector|||1.031|Use of .data in tidyselect expressions was deprecated in tidyselect 1.2.0.ℹ Please use all_ofvar or any_ofvar instead of .datavar|
-perc_diff|function|79c7823ca91ca93a|||||||||||||||
-plot_decision_surface|function|1aadcccbc2564a45|||||||||||||||
 slides|stem||2d09dac97701988d|7a08d4ee3442fe9c|1331386099|index.html*index.qmd|t20132.8850594355s||0|file|local|vector|||||_paths_ missing files index.html
-viz_penguins|function|0c574080ceba4912|||||||||||||||
-viz_surv_bm|function|b64e80a1f085df17|||||||||||||||
+fig_surv_bm|stem|bd81a4ac12ca38e9|6075f88f38ab7ae4|e86f91305d755c69|1853368272||t20249.5287963899s|s935249b|935249|rds|local|vector|||1.109|[1m[22mUse of .data in tidyselect expressions was deprecated in tidyselect 1.2.0. [36mℹ[39m Please use `all_of(var)` (or `any_of(var)`) instead of `.data[[var]]`|
+perc_diff|function|79c7823ca91ca93a
+plot_decision_surface|function|1aadcccbc2564a45
+.Random.seed|object|e5a1aa987ac5c113
+viz_surv_bm|function|b64e80a1f085df17
+viz_penguins|function|0c574080ceba4912
+fig_penguins|stem|f903f32da5b73ce8|cd619b5c3939e650|b071534582f06684|-599837288||t20249.5293051878s|s9682398b|9682398|rds|local|vector|||13.75||

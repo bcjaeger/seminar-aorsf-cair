@@ -2,7 +2,7 @@
 title: "Oblique Random Forests"
 subtitle: "Making Leo Breiman’s Masterpiece Accessible and Interpretable with `aorsf`"
 author: "Byron C Jaeger"
-date: "February 19, 2025"
+date: "June 11, 2025"
 format: 
   revealjs:
     theme: simple
