@@ -52,6 +52,10 @@ withr::with_dir(
 
 ![](img/run_R_kids.png){fig-align="center"}
 
+## Perisphere
+
+Learn more about us: [https://www.perisphere-rwe.com/](https://www.perisphere-rwe.com/)
+
 ## Bottom line up front
 
 1. Oblique random forests are good at prediction, and they are *excellent* tools for spectral data (defined later).
